@@ -1,0 +1,1706 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard TPM 2025 — MDH</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Barlow:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Barlow+Condensed:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --azul:       #0B1F5B;
+    --azul-med:   #1A3A8F;
+    --azul-light: #E8EEF8;
+    --azul-pale:  #F2F5FB;
+    --amarillo:   #F4B400;
+    --amarillo-d: #C99200;
+    --amarillo-l: #FEF7DC;
+    --rojo:       #D63B2F;
+    --rojo-l:     #FDECEA;
+    --verde:      #1B7A4A;
+    --verde-l:    #E6F4EC;
+    --gris:       #F5F6F8;
+    --gris-bd:    #DDE2EE;
+    --texto:      #1A1E2E;
+    --subtexto:   #5A6180;
+    --blanco:     #FFFFFF;
+    --shadow:     0 2px 12px rgba(11,31,91,0.10);
+    --shadow-lg:  0 4px 24px rgba(11,31,91,0.14);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Barlow', sans-serif;
+    background: #EDF0F7;
+    color: var(--texto);
+    font-size: 14px;
+    min-height: 100vh;
+  }
+
+  /* ── HEADER ── */
+  .header {
+    background: var(--azul);
+    padding: 0 32px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 60px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 2px 16px rgba(0,0,0,0.25);
+  }
+  .header-left { display: flex; align-items: center; gap: 16px; }
+  .header-logo {
+    width: 36px; height: 36px; background: var(--amarillo);
+    border-radius: 8px; display: flex; align-items: center; justify-content: center;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 700; font-size: 15px; color: var(--azul); letter-spacing: 0.5px;
+  }
+  .header-title {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 600; font-size: 17px; color: var(--blanco); letter-spacing: 0.3px;
+  }
+  .header-sub { font-size: 11px; color: rgba(255,255,255,0.55); margin-top: 1px; }
+  .header-badge {
+    background: rgba(244,180,0,0.18); border: 1px solid rgba(244,180,0,0.40);
+    color: var(--amarillo); padding: 4px 12px; border-radius: 20px;
+    font-size: 11px; font-weight: 600; letter-spacing: 0.5px;
+  }
+
+  /* ── NAV TABS ── */
+  .nav-tabs {
+    background: var(--blanco);
+    border-bottom: 2px solid var(--gris-bd);
+    padding: 0 32px;
+    display: flex; gap: 4px;
+    position: sticky; top: 60px; z-index: 99;
+    box-shadow: 0 1px 6px rgba(0,0,0,0.06);
+  }
+  .tab-btn {
+    padding: 12px 20px; border: none; background: none; cursor: pointer;
+    font-family: 'Barlow', sans-serif; font-size: 13px; font-weight: 500;
+    color: var(--subtexto); border-bottom: 3px solid transparent;
+    margin-bottom: -2px; transition: all .2s; white-space: nowrap;
+  }
+  .tab-btn:hover { color: var(--azul-med); background: var(--azul-pale); border-radius: 6px 6px 0 0; }
+  .tab-btn.active { color: var(--azul); font-weight: 700; border-bottom-color: var(--amarillo); }
+
+  /* ── LAYOUT ── */
+  .main { padding: 24px 32px; max-width: 1600px; margin: 0 auto; }
+  .page { display: none; }
+  .page.active { display: block; }
+
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; }
+  .grid-4 { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 16px; }
+  .col-span-2 { grid-column: span 2; }
+  .col-span-3 { grid-column: span 3; }
+
+  /* ── CARDS ── */
+  .card {
+    background: var(--blanco); border-radius: 12px;
+    box-shadow: var(--shadow); overflow: hidden;
+  }
+  .card-header {
+    padding: 14px 20px 10px;
+    border-bottom: 1px solid var(--gris-bd);
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .card-title {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 600; font-size: 14px; color: var(--azul);
+    text-transform: uppercase; letter-spacing: 0.6px;
+  }
+  .card-sub { font-size: 11px; color: var(--subtexto); margin-top: 2px; }
+  .card-body { padding: 16px 20px; }
+
+  /* ── KPI CARDS ── */
+  .kpi-card {
+    background: var(--blanco); border-radius: 12px;
+    box-shadow: var(--shadow); padding: 20px;
+    border-left: 4px solid var(--azul);
+    display: flex; flex-direction: column; gap: 6px;
+  }
+  .kpi-card.yellow { border-left-color: var(--amarillo); }
+  .kpi-card.red    { border-left-color: var(--rojo); background: var(--rojo-l); }
+  .kpi-card.green  { border-left-color: var(--verde); background: var(--verde-l); }
+
+  .kpi-label { font-size: 11px; font-weight: 600; color: var(--subtexto); text-transform: uppercase; letter-spacing: 0.5px; }
+  .kpi-value { font-family: 'Barlow Condensed', sans-serif; font-size: 38px; font-weight: 700; color: var(--azul); line-height: 1; }
+  .kpi-card.red .kpi-value    { color: var(--rojo); }
+  .kpi-card.green .kpi-value  { color: var(--verde); }
+  .kpi-card.yellow .kpi-value { color: var(--amarillo-d); }
+  .kpi-detail { font-size: 12px; color: var(--subtexto); }
+
+  /* ── BADGE ── */
+  .badge {
+    display: inline-block; padding: 3px 9px; border-radius: 20px;
+    font-size: 11px; font-weight: 700; letter-spacing: 0.3px;
+  }
+  .badge-red    { background: var(--rojo-l);   color: var(--rojo); }
+  .badge-green  { background: var(--verde-l);  color: var(--verde); }
+  .badge-yellow { background: var(--amarillo-l); color: var(--amarillo-d); }
+  .badge-blue   { background: var(--azul-light); color: var(--azul); }
+
+  /* ── SECTION TITLE ── */
+  .section-title {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 13px; font-weight: 700; color: var(--subtexto);
+    text-transform: uppercase; letter-spacing: 1px;
+    margin-bottom: 14px; padding-bottom: 6px;
+    border-bottom: 2px solid var(--amarillo);
+    display: inline-block;
+  }
+
+  /* ── HORIZONTAL BAR ── */
+  .h-bar-row {
+    display: flex; align-items: center; gap: 10px;
+    padding: 6px 0; border-bottom: 1px solid var(--gris);
+  }
+  .h-bar-row:last-child { border-bottom: none; }
+  .h-bar-label { width: 210px; font-size: 12px; color: var(--texto); flex-shrink: 0; line-height: 1.3; }
+  .h-bar-track { flex: 1; height: 14px; background: var(--gris); border-radius: 7px; overflow: hidden; }
+  .h-bar-fill  { height: 100%; border-radius: 7px; transition: width .8s ease; }
+  .h-bar-val   { width: 50px; text-align: right; font-size: 12px; font-weight: 600; color: var(--azul); flex-shrink: 0; }
+  .h-bar-fill.rojo    { background: linear-gradient(90deg, #D63B2F, #F4736A); }
+  .h-bar-fill.azul    { background: linear-gradient(90deg, #0B1F5B, #1A3A8F); }
+  .h-bar-fill.amarillo{ background: linear-gradient(90deg, #C99200, #F4B400); }
+  .h-bar-fill.verde   { background: linear-gradient(90deg, #1B7A4A, #27AE60); }
+  .h-bar-fill.azul-m  { background: linear-gradient(90deg, #1A3A8F, #4A72CC); }
+
+  /* ── FLOW ARROW ── */
+  .flow-row {
+    display: flex; align-items: center; gap: 16px; margin-bottom: 16px;
+  }
+  .flow-box {
+    flex: 1; background: var(--azul-pale); border: 1px solid var(--gris-bd);
+    border-radius: 10px; padding: 16px; text-align: center;
+  }
+  .flow-box.highlight { background: var(--azul); color: white; border-color: var(--azul); }
+  .flow-box.target    { background: var(--verde-l); border-color: var(--verde); }
+  .flow-box.gap       { background: var(--rojo-l); border-color: var(--rojo); }
+  .flow-num {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 36px; font-weight: 700; line-height: 1;
+  }
+  .flow-box.highlight .flow-num { color: var(--amarillo); }
+  .flow-box.target .flow-num    { color: var(--verde); }
+  .flow-box.gap .flow-num       { color: var(--rojo); }
+  .flow-label { font-size: 11px; margin-top: 4px; opacity: 0.8; }
+  .flow-arrow { font-size: 22px; color: var(--subtexto); flex-shrink: 0; }
+
+  /* ── INDICATOR TABLE ── */
+  .ind-table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+  .ind-table th {
+    background: var(--azul); color: white; padding: 8px 10px;
+    text-align: left; font-size: 11px; font-weight: 600;
+    text-transform: uppercase; letter-spacing: 0.4px;
+  }
+  .ind-table th:nth-child(2), .ind-table th:nth-child(3),
+  .ind-table th:nth-child(4), .ind-table th:nth-child(5) { text-align: right; }
+  .ind-table td { padding: 7px 10px; border-bottom: 1px solid var(--gris-bd); }
+  .ind-table td:nth-child(2), .ind-table td:nth-child(3),
+  .ind-table td:nth-child(4), .ind-table td:nth-child(5) { text-align: right; font-weight: 500; }
+  .ind-table tr:hover td { background: var(--azul-pale); }
+  .ind-table tr.rojo td { background: var(--rojo-l); }
+  .ind-table tr.tpm-row td {
+    background: var(--azul); color: white; font-weight: 700; font-size: 13px;
+  }
+
+  /* ── STACKED BAR ── */
+  .stack-row { display: flex; align-items: center; gap: 10px; padding: 5px 0; }
+  .stack-label { width: 190px; font-size: 12px; color: var(--texto); flex-shrink: 0; line-height: 1.3; }
+  .stack-track { flex: 1; height: 26px; display: flex; border-radius: 6px; overflow: hidden; }
+  .stack-seg { display: flex; align-items: center; justify-content: center;
+               font-size: 11px; font-weight: 600; color: white; transition: width .8s; }
+  .stack-total { width: 44px; text-align: right; font-size: 12px; font-weight: 700; color: var(--azul); flex-shrink: 0; }
+
+  /* ── PROVINCE TABLE ── */
+  .prov-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;
+  }
+  .prov-item {
+    background: var(--gris); border-radius: 8px; padding: 10px 12px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .prov-name { font-size: 12px; color: var(--texto); font-weight: 500; }
+  .prov-val  {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 18px; font-weight: 700;
+  }
+
+  /* ── DECISIVENESS ── */
+  .decis-card {
+    background: var(--azul-pale); border: 1px solid var(--gris-bd);
+    border-radius: 10px; padding: 14px 16px; display: flex; gap: 14px; align-items: flex-start;
+  }
+  .decis-rank {
+    width: 32px; height: 32px; border-radius: 50%;
+    background: var(--azul); color: white;
+    font-family: 'Barlow Condensed', sans-serif; font-size: 16px; font-weight: 700;
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  .decis-name { font-size: 13px; font-weight: 600; color: var(--azul); margin-bottom: 4px; }
+  .decis-nums { display: flex; gap: 20px; font-size: 12px; color: var(--subtexto); }
+  .decis-big  { font-family: 'Barlow Condensed', sans-serif; font-size: 22px; font-weight: 700; color: var(--rojo); }
+
+  /* ── FOOTER ── */
+  .footer {
+    background: var(--azul); color: rgba(255,255,255,0.5);
+    text-align: center; font-size: 11px; padding: 14px;
+    margin-top: 32px;
+  }
+
+  .ind-btn {
+    padding: 8px 16px; border: none; border-left-width: 4px;
+    border-left-style: solid; background: var(--gris);
+    border-radius: 0 8px 8px 0; cursor: pointer;
+    font-family: 'Barlow', sans-serif; font-size: 12px;
+    font-weight: 500; color: var(--subtexto); transition: all .2s;
+  }
+  .ind-btn:hover { background: var(--azul-pale); color: var(--azul); }
+  .ind-btn.active { background: var(--azul-pale); color: var(--azul); font-weight: 700; }
+
+  
+  /* ── CRONOGRAMA ── */
+  .inst-btn {
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 6px; padding: 14px 20px; border: 2px solid var(--gris-bd);
+    border-radius: 12px; background: var(--blanco); cursor: pointer;
+    font-family: 'Barlow', sans-serif; transition: all .2s; min-width: 140px;
+    box-shadow: var(--shadow);
+  }
+  .inst-btn-disabled {
+    opacity: 0.45 !important;
+    cursor: not-allowed !important;
+    pointer-events: none;
+    border-style: dashed !important;
+  }
+  .inst-btn-disabled:hover {
+    transform: none !important;
+    background: var(--blanco) !important;
+    border-color: var(--gris-bd) !important;
+  }
+  .inst-btn:hover { border-color: var(--azul-med); background: var(--azul-pale); transform: translateY(-2px); }
+  .inst-btn.active { border-color: var(--azul); background: var(--azul); color: white; }
+  .inst-btn .inst-sigla {
+    font-family: 'Barlow Condensed', sans-serif; font-size: 22px; font-weight: 700;
+    color: var(--azul);
+  }
+  .inst-btn.active .inst-sigla { color: var(--amarillo); }
+  .inst-btn .inst-name { font-size: 10px; font-weight: 600; color: var(--subtexto); text-align: center; line-height: 1.3; }
+  .inst-btn.active .inst-name { color: rgba(255,255,255,0.8); }
+  .inst-btn .inst-coming { font-size: 9px; color: var(--subtexto); font-style: italic; }
+
+  .cron-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  .cron-table th {
+    background: var(--azul); color: white; padding: 9px 12px;
+    text-align: left; font-size: 11px; font-weight: 600;
+    text-transform: uppercase; letter-spacing: 0.4px; white-space: nowrap;
+  }
+  .cron-table th.center { text-align: center; }
+  .cron-table td { padding: 10px 12px; border-bottom: 1px solid var(--gris-bd); vertical-align: top; line-height: 1.45; }
+  .cron-table tr:hover td { background: var(--azul-pale); }
+  .cron-table tr:nth-child(even) td { background: var(--gris); }
+  .cron-table tr:nth-child(even):hover td { background: var(--azul-pale); }
+  .cron-table td.center { text-align: center; }
+
+  .estado-badge {
+    display: inline-block; padding: 4px 10px; border-radius: 20px;
+    font-size: 11px; font-weight: 700; white-space: nowrap;
+  }
+  .estado-cumplido    { background: #D4EDDA; color: #1B7A4A; }
+  .estado-ejecucion   { background: #FFF3CD; color: #7F6000; }
+  .estado-noiniciado  { background: #FDECEA; color: #D63B2F; }
+  .estado-suspendida  { background: #FDECEA; color: #D63B2F; }
+  .estado-finalizada  { background: #D4EDDA; color: #1B7A4A; }
+
+  .pct-bar-wrap { display: flex; align-items: center; gap: 6px; }
+  .pct-bar-track { flex: 1; height: 8px; background: var(--gris-bd); border-radius: 4px; overflow: hidden; min-width: 60px; }
+  .pct-bar-fill  { height: 100%; border-radius: 4px; transition: width .6s ease; }
+  .pct-val { font-size: 11px; font-weight: 700; color: var(--azul); white-space: nowrap; }
+
+  .accion-num {
+    width: 28px; height: 28px; border-radius: 50%; background: var(--azul);
+    color: white; font-weight: 700; font-size: 13px;
+    display: inline-flex; align-items: center; justify-content: center;
+    flex-shrink: 0; font-family: 'Barlow Condensed', sans-serif;
+  }
+  .accion-title { font-weight: 600; color: var(--azul); font-size: 12px; line-height: 1.4; }
+  .accion-desc  { font-size: 11px; color: var(--subtexto); margin-top: 3px; line-height: 1.4; }
+  .link-btn { color: var(--azul-med); font-size: 10px; text-decoration: none; }
+  .link-btn:hover { text-decoration: underline; }
+
+  .summary-kpi {
+    background: var(--blanco); border-radius: 10px; padding: 14px 18px;
+    box-shadow: var(--shadow); border-left: 4px solid var(--azul);
+    display: flex; flex-direction: column; gap: 4px;
+  }
+  .summary-kpi .sk-num {
+    font-family: 'Barlow Condensed', sans-serif; font-size: 32px;
+    font-weight: 700; color: var(--azul); line-height: 1;
+  }
+  .summary-kpi .sk-label { font-size: 11px; color: var(--subtexto); font-weight: 500; }
+
+  /* ── PROVINCE LIST ── */
+  .prov-list-item {
+    display: flex; align-items: center; gap: 8px; padding: 6px 8px;
+    border-radius: 8px; cursor: pointer; transition: background .15s;
+    border: 1.5px solid transparent;
+  }
+  .prov-list-item:hover { background: var(--azul-pale); border-color: var(--gris-bd); }
+  .prov-list-item.selected { background: var(--azul-pale); border-color: var(--azul); }
+  .prov-list-rank {
+    width: 22px; height: 22px; border-radius: 50%; background: var(--gris-bd);
+    font-size: 10px; font-weight: 700; color: var(--subtexto);
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  .prov-list-item.selected .prov-list-rank { background: var(--azul); color: white; }
+  .prov-list-name { flex: 1; font-size: 12px; color: var(--texto); font-weight: 500; }
+  .prov-list-item.selected .prov-list-name { color: var(--azul); font-weight: 600; }
+  .prov-list-bar-wrap { display: flex; align-items: center; gap: 6px; }
+  .prov-list-bar { height: 6px; border-radius: 3px; min-width: 4px; }
+  .prov-list-val { font-size: 11px; font-weight: 700; width: 40px; text-align: right; }
+
+  /* ── CRONOGRAMA FILTERS ── */
+  .cron-filter {
+    padding: 5px 12px; border-radius: 20px; border: 1.5px solid var(--gris-bd);
+    background: var(--gris); cursor: pointer; font-size: 11px; font-weight: 600;
+    color: var(--subtexto); font-family: 'Barlow', sans-serif; transition: all .15s;
+    display: inline-flex; align-items: center; gap: 5px;
+  }
+  .cron-filter:hover { border-color: var(--azul); color: var(--azul); background: var(--azul-pale); }
+  .cron-filter.active          { background: var(--azul);    color: white; border-color: var(--azul); }
+  .cron-filter.ejecucion.active{ background: #7F6000;        color: white; border-color: #7F6000; }
+  .cron-filter.cumplido.active { background: var(--verde);   color: white; border-color: var(--verde); }
+  .cron-filter.vencido.active  { background: var(--rojo);    color: white; border-color: var(--rojo); }
+  .filter-count {
+    background: rgba(255,255,255,0.25); border-radius: 10px;
+    padding: 1px 6px; font-size: 10px; font-weight: 700;
+  }
+  .cron-filter:not(.active) .filter-count { background: var(--gris-bd); color: var(--subtexto); }
+
+  canvas { max-height: 360px; }
+
+  @media (max-width: 900px) {
+    .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; }
+    .col-span-2, .col-span-3 { grid-column: span 1; }
+    .main { padding: 16px; }
+    .nav-tabs { overflow-x: auto; }
+  }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="header">
+  <div class="header-left">
+    <div class="header-logo">MDH</div>
+    <div>
+      <div class="header-title">Indicador sobre la Tasa de Pobreza Multidimensional (TPM)</div>
+      <div class="header-sub">Ministerio de Desarrollo Humano · INEC-ENEMDU 2025</div>
+    </div>
+  </div>
+  <div class="header-badge">TPM 2025: 37.11%</div>
+</header>
+
+<!-- NAV -->
+<nav class="nav-tabs">
+    <button class="tab-btn" onclick="showPage('indicadores',event)" class="tab-btn active">Indicadores de la TPM </button>
+  <button class="tab-btn" onclick="showPage('contrafactual',event)">Análisis Contrafactual</button>
+  <button class="tab-btn" onclick="showPage('territorial',event)">Datos a nivel territorial</button>
+  <button class="tab-btn" onclick="showPage('serie',event)">Serie Histórica</button>
+  <button class="tab-btn" onclick="showPage('cronograma',event)">Cronograma de Gestión</button>
+</nav>
+
+<main class="main">
+
+<!-- ═══════════════════════════════════════════
+     PAGE 1: RESUMEN
+═══════════════════════════════════════════ -->
+<!-- ═══════════════════════════════════════════
+     PAGE 2: INDICADORES
+═══════════════════════════════════════════ -->
+<div id="page-indicadores" class="page active">
+
+  <div class="grid-4" style="margin-bottom:20px;">
+    <div class="kpi-card red">
+      <div class="kpi-label">TPM 2025</div>
+      <div class="kpi-value">37.11%</div>
+      <div class="kpi-detail">+0.26 puntos porcentuales (pp) vs. 2024</div>
+    </div>
+    <div class="kpi-card yellow">
+      <div class="kpi-label">Meta PND 2025</div>
+      <div class="kpi-value">35.58%</div>
+      <div class="kpi-detail">Meta Plan Nacional de Desarrollo</div>
+    </div>
+    <div class="kpi-card red">
+      <div class="kpi-label">Brecha frente a meta para el 2025</div>
+      <div class="kpi-value">+1.53 pp</div>
+      <div class="kpi-detail"> </div>
+    </div>
+  </div>
+
+  <div style="margin-bottom:20px;">
+    <div class="card">
+      <div class="card-header">
+        <div>
+          <div class="card-title">Evolución de los 12 Indicadores de Pobreza Multidimensional 2023–2025</div>
+          <div class="card-sub">Fuente: INEC-ENEMDU Anual · Indicadores en rojo subieron en 2025</div>
+        </div>
+      </div>
+      <div class="card-body" style="padding:0;">
+        <table class="ind-table">
+          <thead>
+            <tr>
+              <th style="width:320px;">Indicador</th>
+              <th>2023</th>
+              <th>2024</th>
+              <th>2025</th>
+              <th>Variación</th>
+            </tr>
+          </thead>
+          <tbody id="tabla-indicadores"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">Contribución al resultado TPM 2025</div>
+        <div class="card-sub">Peso estructural de cada indicador en el resultado nacional</div>
+      </div>
+      <div class="card-body" id="contrib-bars"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">Descomposición Urbano-Rural</div>
+        <div class="card-sub">Contribución de los 4 indicadores objetivo al resultado TPM 2025</div>
+      </div>
+      <div class="card-body" id="urban-rural-bars"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     PAGE 3: CONTRAFACTUAL
+═══════════════════════════════════════════ -->
+<div id="page-contrafactual" class="page">
+
+  <div class="grid-2" style="margin-bottom:20px;align-items:start;">
+
+    <!-- Gráfico contrafactual -->
+    <div class="card">
+      <div class="card-header">
+        <div>
+          <div class="card-title">Impacto contrafactual individual — 4 indicadores objetivo</div>
+          <div class="card-sub">Cuánto bajaría la TPM si cada indicador dejara de existir en el índice</div>
+        </div>
+        <span class="badge badge-red">Brecha meta: 1.53 pp</span>
+      </div>
+      <div class="card-body">
+        <canvas id="chart-contrafactual" height="280"></canvas>
+        <div style="margin-top:10px;font-size:11px;color:var(--subtexto);background:var(--rojo-l);padding:8px 12px;border-radius:6px;border-left:3px solid var(--rojo);">
+          La línea <strong style="color:var(--rojo);">roja</strong> marca la brecha de 1.53 pp. Todos los indicadores la superan individualmente.
+        </div>
+      </div>
+    </div>
+
+    <!-- Tarjetas decisividad -->
+    <div class="card">
+      <div class="card-header">
+        <div>
+          <div class="card-title">Decisividad — ¿Para quién es clave cada indicador?</div>
+          <div class="card-sub">% de personas para quienes ese indicador es decisivo para salir de la pobreza</div>
+        </div>
+      </div>
+      <div class="card-body">
+        <div style="display:flex;flex-direction:column;gap:12px;" id="decis-cards"></div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title">Prevalencia en población total vs. entre pobres multidimensionales</div>
+      <div class="card-sub">Cuán concentradas están las privaciones dentro del grupo de pobres</div>
+    </div>
+    <div class="card-body">
+      <canvas id="chart-prevalencia" height="200"></canvas>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     PAGE 4: TERRITORIAL
+═══════════════════════════════════════════ -->
+<div id="page-territorial" class="page">
+
+  <!-- Selector de indicador -->
+  <div style="display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap;">
+    <div style="font-size:13px;font-weight:600;color:var(--subtexto);
+         display:flex;align-items:center;margin-right:6px;">Indicador:</div>
+    <button class="ind-btn active" onclick="seleccionarIndicador('saneamiento',this)"
+      style="border-left:4px solid #7B4FA6;">Sin saneamiento de excretas</button>
+    <button class="ind-btn" onclick="seleccionarIndicador('educ',this)"
+      style="border-left:4px solid #2D6EA5;">Educ. superior (económica)</button>
+    <button class="ind-btn" onclick="seleccionarIndicador('hacinamiento',this)"
+      style="border-left:4px solid #E8C800;">Hacinamiento</button>
+    <button class="ind-btn" onclick="seleccionarIndicador('basura',this)"
+      style="border-left:4px solid #2A9D8F;">Sin recolección de basura</button>
+  </div>
+
+  <div class="grid-2" style="align-items:start;">
+
+    <!-- Panel provincial -->
+    <div class="card" id="card-provincial">
+      <div class="card-header">
+        <div>
+          <div class="card-title" id="titulo-provincial">Sin saneamiento de excretas</div>
+          <div class="card-sub">Contribución provincial al resultado TPM nacional · haz clic en una provincia para ver sus cantones</div>
+        </div>
+        <span class="badge badge-blue" id="total-nacional-badge">7.3% nacional</span>
+      </div>
+      <div class="card-body" style="padding:12px 16px;">
+        <canvas id="chart-prov-ind" height="520"></canvas>
+      </div>
+    </div>
+
+    <!-- Panel derecho: lista provincias + cantones -->
+    <div class="card" id="card-cantonal" style="display:flex;flex-direction:column;gap:0;">
+
+      <!-- Lista de provincias -->
+      <div style="border-bottom:1px solid var(--gris-bd);">
+        <div class="card-header" style="padding-bottom:8px;">
+          <div>
+            <div class="card-title" id="titulo-prov-lista">Ranking de provincias</div>
+            <div class="card-sub">Selecciona para ver cantones</div>
+          </div>
+        </div>
+        <div id="prov-lista" style="padding:8px 12px;display:flex;flex-direction:column;gap:4px;
+             max-height:300px;overflow-y:auto;"></div>
+      </div>
+
+      <!-- Panel cantonal -->
+      <div>
+        <div class="card-header" style="justify-content:space-between;">
+          <div>
+            <div class="card-title" id="titulo-cantonal">← Selecciona una provincia</div>
+            <div class="card-sub" id="sub-cantonal">del listado o del gráfico</div>
+          </div>
+          <button onclick="limpiarCantonal()" id="btn-volver"
+            style="display:none;padding:4px 14px;border-radius:20px;border:1px solid var(--gris-bd);
+                   background:var(--gris);font-size:12px;cursor:pointer;color:var(--subtexto);">
+            ✕ Limpiar
+          </button>
+        </div>
+        <div class="card-body" style="padding:12px 16px;" id="body-cantonal">
+          <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;
+                      height:220px;color:var(--subtexto);gap:10px;">
+            <div style="font-size:32px;">👆</div>
+            <div style="font-size:13px;font-weight:500;">Selecciona una provincia</div>
+            <div style="font-size:12px;">del listado de arriba o del gráfico</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     PAGE 5: SERIE HISTÓRICA
+═══════════════════════════════════════════ -->
+<div id="page-serie" class="page">
+  <div class="card" style="margin-bottom:20px;">
+    <div class="card-header">
+      <div>
+        <div class="card-title">Serie Histórica TPM — Nivel Nacional 2021–2025</div>
+        <div class="card-sub">Evolución real con intervalo de confianza 95% · Meta PND 2025: 35.58% · Meta PND 2029: 32.59%</div>
+      </div>
+    </div>
+    <div class="card-body">
+      <canvas id="chart-serie" height="340"></canvas>
+    </div>
+  </div>
+
+  <div class="grid-3">
+    <div class="kpi-card">
+      <div class="kpi-label">Brecha respecto a la meta del año 2025</div>
+      <div class="kpi-value">+1.53 pp</div>
+    </div>
+
+    <div class="kpi-card red">
+      <div class="kpi-label">Caída necesaria anual</div>
+      <div class="kpi-value">−1.06 pp</div>
+      <div class="kpi-detail">Para alcanzar meta 2029 de 32.59%</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     PAGE 6: CRONOGRAMA DE GESTIÓN
+═══════════════════════════════════════════ -->
+<div id="page-cronograma" class="page">
+
+  <!-- Instituciones -->
+  <div style="margin-bottom:20px;">
+    <div style="font-size:12px;font-weight:600;color:var(--subtexto);text-transform:uppercase;
+                letter-spacing:.8px;margin-bottom:12px;">Selecciona la institución:</div>
+    <div style="display:flex;gap:12px;flex-wrap:wrap;">
+      <button class="inst-btn active" onclick="verInstitucion('MDH', this)">
+        <div class="inst-sigla">MDH</div>
+        <div class="inst-name">Ministerio de<br>Desarrollo Humano</div>
+      </button>
+      <button class="inst-btn" onclick="verInstitucion('MINEDEC', this)">
+        <div class="inst-sigla">MINEDEC</div>
+        <div class="inst-name">Min. Educación,<br>Deporte y Cultura</div>
+      </button>
+      <button class="inst-btn" onclick="verInstitucion('MIT', this)">
+        <div class="inst-sigla">MIT</div>
+        <div class="inst-name">Min. Infraestructura<br>y Trabajo</div>
+      </button>
+      <button class="inst-btn inst-btn-disabled" title="Información próximamente disponible" disabled>
+        <div class="inst-sigla" style="color:var(--subtexto);">VMDUH</div>
+        <div class="inst-name">Vic. Desarrollo<br>Urbano y Vivienda</div>
+        <div class="inst-coming">🔒 Próximamente</div>
+      </button>
+      <button class="inst-btn inst-btn-disabled" title="Información próximamente disponible" disabled>
+        <div class="inst-sigla" style="color:var(--subtexto);">MAATE</div>
+        <div class="inst-name">Min. Ambiente,<br>Agua y Transición</div>
+        <div class="inst-coming">🔒 Próximamente</div>
+      </button>    </div>
+  </div>
+
+  <!-- Summary KPIs -->
+  <div id="cron-kpis" style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px;"></div>
+
+  <!-- Tabla cronograma -->
+  <div class="card">
+    <div class="card-header" style="justify-content:space-between;flex-wrap:wrap;gap:8px;">
+      <div>
+        <div class="card-title" id="cron-titulo">Ministerio de Desarrollo Humano — Cronograma de Acciones 2026</div>
+        <div class="card-sub" id="cron-sub">Mes de reporte: Marzo 2026 · Acciones orientadas a reducir la TPM</div>
+      </div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;" id="cron-filtros">
+        <button class="cron-filter active" data-filter="todas" onclick="filtrarCronograma('todas',this)">
+          Todas <span class="filter-count" id="fc-todas"></span>
+        </button>
+        <button class="cron-filter ejecucion" data-filter="ejecucion" onclick="filtrarCronograma('ejecucion',this)">
+          🟡 En ejecución <span class="filter-count" id="fc-ejecucion"></span>
+        </button>
+        <button class="cron-filter cumplido" data-filter="cumplido" onclick="filtrarCronograma('cumplido',this)">
+          ✅ Cumplidas <span class="filter-count" id="fc-cumplido"></span>
+        </button>
+        <button class="cron-filter vencido" data-filter="vencido" onclick="filtrarCronograma('vencido',this)">
+          🔴 Vencidas <span class="filter-count" id="fc-vencido"></span>
+        </button>
+      </div>
+    </div>
+    <div class="card-body" style="padding:0;overflow-x:auto;">
+      <table class="cron-table" id="cron-tabla">
+        <thead>
+          <tr>
+            <th style="width:32px;" class="center">#</th>
+            <th style="min-width:260px;">Acción planificada</th>
+            <th style="min-width:100px;" class="center">Tipo</th>
+            <th style="min-width:90px;" class="center">Período</th>
+            <th style="min-width:90px;" class="center">Frecuencia</th>
+            <th style="min-width:160px;">Resultados obtenidos</th>
+            <th style="display:none;">% Ejecución</th>
+            <th style="min-width:130px;" class="center">Estado</th>
+            <th style="min-width:180px;">Justificación</th>
+          </tr>
+        </thead>
+        <tbody id="cron-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Nota plantilla -->
+  <div style="margin-top:16px;padding:12px 16px;background:var(--azul-pale);border-radius:8px;
+              border-left:4px solid var(--azul);font-size:11px;color:var(--subtexto);">
+    <strong style="color:var(--azul);">📋 Actualización de datos:</strong>
+    Para agregar o actualizar información de una institución, completa la plantilla Excel estandarizada y
+    entrega al equipo técnico para su carga en el dashboard.
+    Los estados se asignan automáticamente: <strong style="color:var(--verde);">verde = Cumplido</strong>,
+    <strong style="color:#7F6000;">amarillo = En ejecución</strong>,
+    <strong style="color:var(--rojo);">rojo = No iniciado / Vencido</strong>.
+  </div>
+</div>
+
+</main>
+
+<footer class="footer">
+  Ministerio de Desarrollo Humano · Subsecretaría de Gestión de Datos y Estudios · Análisis TPM 2025 · INEC-ENEMDU
+</footer>
+
+<script>
+// ══════════════════════════════════════
+// DATA
+// ══════════════════════════════════════
+const DATA = {
+  indicadores: [
+    { nombre: "Inasistencia educ. básica y bachillerato", v23: 8.98, v24: 9.36, v25: 8.97, var: -4.2, rojo: false },
+    { nombre: "No acceso a educ. superior (económica)", v23: 19.94, v24: 18.89, v25: 19.21, var: 1.7, rojo: true },
+    { nombre: "Logro educativo incompleto", v23: 32.85, v24: 33.13, v25: 32.19, var: -2.8, rojo: false },
+    { nombre: "Empleo infantil y adolescente", v23: 6.90, v24: 7.21, v25: 5.76, var: -20.1, rojo: false },
+    { nombre: "Desempleo o empleo inadecuado", v23: 43.21, v24: 43.17, v25: 42.55, var: -1.4, rojo: false },
+    { nombre: "No contribución al sistema de pensiones", v23: 43.27, v24: 43.32, v25: 43.14, var: -0.4, rojo: false },
+    { nombre: "Pobreza extrema por ingresos", v23: 8.75, v24: 8.81, v25: 6.83, var: -22.5, rojo: false },
+    { nombre: "Sin servicio de agua por red pública", v23: 19.86, v24: 21.00, v25: 20.24, var: -3.6, rojo: false },
+    { nombre: "Hacinamiento", v23: 14.80, v24: 13.98, v25: 14.00, var: 0.1, rojo: true },
+    { nombre: "Déficit habitacional", v23: 57.03, v24: 57.86, v25: 56.35, var: -2.6, rojo: false },
+    { nombre: "Sin saneamiento de excretas", v23: 20.12, v24: 19.64, v25: 20.78, var: 5.8, rojo: true },
+    { nombre: "Sin servicio de recolección de basura", v23: 12.70, v24: 11.80, v25: 14.22, var: 20.5, rojo: true },
+  ],
+  contribuciones: [
+    { nombre: "Déficit habitacional",       val: 19.82 },
+    { nombre: "No contrib. pensiones",      val: 15.18 },
+    { nombre: "Desempleo/subempleo",         val: 14.97 },
+    { nombre: "Logro educ. incompleto",      val: 11.32 },
+    { nombre: "Sin saneamiento excretas",   val: 7.31, rojo: true },
+    { nombre: "Sin agua red pública",        val: 7.12 },
+    { nombre: "Educ. superior económica",   val: 6.76, rojo: true },
+    { nombre: "Sin recolección basura",     val: 5.00, rojo: true },
+    { nombre: "Hacinamiento",               val: 4.93, rojo: true },
+    { nombre: "Inasistencia educ. básica",  val: 3.16 },
+    { nombre: "Pobreza extrema ingresos",   val: 2.40 },
+    { nombre: "Empleo infantil",            val: 2.03 },
+  ],
+  urbanoRural: [
+    { nombre: "Sin saneamiento excretas", urbano: 5.21, rural: 2.11, total: 7.32 },
+    { nombre: "Educ. superior económica", urbano: 3.69, rural: 3.08, total: 6.76 },
+    { nombre: "Sin recolección basura",   urbano: 0.79, rural: 4.21, total: 5.00 },
+    { nombre: "Hacinamiento",             urbano: 3.21, rural: 1.73, total: 4.93 },
+  ],
+  contrafactual: [
+    { nombre: "Saneamiento de excretas", impacto: 3.494 },
+    { nombre: "Educ. superior económica", impacto: 3.132 },
+    { nombre: "Hacinamiento", impacto: 2.093 },
+    { nombre: "Sin recolección basura", impacto: 1.622 },
+  ],
+  decisividad: [
+    { nombre: "Sin saneamiento de excretas", pobl: 3.49, pobres: 9.42 },
+    { nombre: "Educ. superior (económica)",  pobl: 3.13, pobres: 8.44 },
+    { nombre: "Hacinamiento",                pobl: 2.09, pobres: 5.64 },
+    { nombre: "Sin recolección de basura",   pobl: 1.62, pobres: 4.37 },
+  ],
+  prevalencia: [
+    { nombre: "Saneamiento",    total: 20.81, pobres: 39.71 },
+    { nombre: "Basura",         total: 14.22, pobres: 35.07 },
+    { nombre: "Hacinamiento",   total: 14.04, pobres: 28.81 },
+    { nombre: "Educ. superior", total: 11.06, pobres: 21.93 },
+  ],
+  provincial: [
+    { prov: "Morona Santiago", tpm: 90.43 }, { prov: "Orellana", tpm: 83.71 }, { prov: "Napo", tpm: 83.53 },
+    { prov: "Cotopaxi", tpm: 64.42 }, { prov: "Los Ríos", tpm: 45.30 }, { prov: "Chimborazo", tpm: 56.92 },
+    { prov: "Esmeraldas", tpm: 56.04 }, { prov: "Sucumbíos", tpm: 56.78 }, { prov: "Pastaza", tpm: 56.85 },
+    { prov: "Manabí", tpm: 51.01 }, { prov: "Bolívar", tpm: 43.11 }, { prov: "Z. Chinchipe", tpm: 43.55 },
+    { prov: "Loja", tpm: 41.72 }, { prov: "Santa Elena", tpm: 41.22 }, { prov: "Carchi", tpm: 38.62 },
+    { prov: "Imbabura", tpm: 37.83 }, { prov: "Tungurahua", tpm: 37.29 }, { prov: "Nacional", tpm: 37.11 },
+    { prov: "Guayas", tpm: 36.10 }, { prov: "Sto. Domingo", tpm: 31.89 }, { prov: "Cañar", tpm: 30.82 },
+    { prov: "Azuay", tpm: 20.89 }, { prov: "El Oro", tpm: 19.72 }, { prov: "Pichincha", tpm: 15.34 },
+    { prov: "Galápagos", tpm: 9.75 },
+  ].sort((a,b) => b.tpm - a.tpm),
+  provIndicadores: {
+    provincias: ["Azuay","Bolívar","Cañar","Carchi","Cotopaxi","Chimborazo","El Oro","Esmeraldas","Guayas","Imbabura","Loja","Los Ríos","Manabí","M. Santiago","Napo","Pastaza","Pichincha","Tungurahua","Z. Chinchipe","Galápagos","Sucumbíos","Orellana","Sto. Domingo","Santa Elena"],
+    inasistencia:[6.53,10.01,6.19,9.85,10.13,10.41,7.14,11.23,9.34,9.94,7.98,11.64,7.16,21.61,13.51,12.3,6.57,6,10.98,3.79,10.51,16.62,8.93,8.95],
+    educ_sup:[19.18,14.2,24.13,20.94,33.85,27.34,21.87,33.65,10.28,30.96,31.99,14.76,15.08,24.8,51.24,35.72,20.33,26.9,26.16,27.93,33.84,52.91,10.83,11.91],
+    saneamiento:[4.56,13,5.88,23.33,12.31,7.01,6.55,34.98,32.81,15.53,12.64,29.8,29.89,83.73,28.44,18.82,4.62,2.64,12.47,42.24,19.92,53.38,23.13,37.05],
+    basura:[5.6,32.79,6.35,27.93,33.36,18.06,2.54,19.88,12.03,14.98,30.11,13.7,19.62,83.11,32.47,21,5.83,7.79,25.43,0.8,18.2,58.15,9.88,0.82],
+  },
+  serie: [
+    { anio: 2018, tpm: 37.74, li: 36.97, ls: 38.51 },
+    { anio: 2019, tpm: 37.88, li: 37.04, ls: 38.72 },
+    { anio: 2021, tpm: 39.63, li: 38.15, ls: 41.11 },
+    { anio: 2022, tpm: 38.40, li: 36.74, ls: 40.05 },
+    { anio: 2023, tpm: 36.92, li: 35.09, ls: 38.74 },
+    { anio: 2024, tpm: 36.85, li: 34.33, ls: 39.37 },
+    { anio: 2025, tpm: 37.11, li: 36.5,  ls: 37.72 },
+  ]
+};
+
+// ══════════════════════════════════════
+// TABS
+// ══════════════════════════════════════
+function showPage(id, evt) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('page-' + id).classList.add('active');
+  const btn = evt ? evt.currentTarget : document.querySelector('[onclick*="' + id + '"]');
+  if (btn) btn.classList.add('active');
+}
+
+// ══════════════════════════════════════
+// TABLA INDICADORES
+// ══════════════════════════════════════
+function buildTablaIndicadores() {
+  const tbody = document.getElementById('tabla-indicadores');
+  DATA.indicadores.forEach(r => {
+    const tr = document.createElement('tr');
+    if (r.rojo) tr.classList.add('rojo');
+    const varColor = r.var > 0 ? '#D63B2F' : '#1B7A4A';
+    const varSign  = r.var > 0 ? '▲' : '▼';
+    tr.innerHTML = `
+      <td>${r.rojo ? '<span class="badge badge-red" style="margin-right:6px;">●</span>' : ''}${r.nombre}</td>
+      <td>${r.v23.toFixed(2)}%</td>
+      <td>${r.v24.toFixed(2)}%</td>
+      <td><strong>${r.v25.toFixed(2)}%</strong></td>
+      <td><span style="color:${varColor};font-weight:700;">${varSign} ${Math.abs(r.var).toFixed(1)}%</span></td>
+    `;
+    tbody.appendChild(tr);
+  });
+  // TPM row
+  const tpmTr = document.createElement('tr');
+  tpmTr.classList.add('tpm-row');
+  tpmTr.innerHTML = `<td>Tasa de Pobreza Multidimensional (TPM)</td><td>36.92%</td><td>36.85%</td><td>37.11%</td><td>▲ 0.7%</td>`;
+  tbody.appendChild(tpmTr);
+}
+
+// ══════════════════════════════════════
+// BARRAS CONTRIBUCIÓN
+// ══════════════════════════════════════
+function buildContribBars() {
+  const cont = document.getElementById('contrib-bars');
+  const max = DATA.contribuciones[0].val;
+  DATA.contribuciones.forEach(r => {
+    const pct = (r.val / max * 100).toFixed(1);
+    const color = r.rojo ? 'rojo' : 'azul';
+    cont.innerHTML += `
+      <div class="h-bar-row">
+        <div class="h-bar-label" style="width:195px;">${r.nombre}</div>
+        <div class="h-bar-track"><div class="h-bar-fill ${color}" style="width:${pct}%"></div></div>
+        <div class="h-bar-val" style="${r.rojo ? 'color:var(--rojo)' : ''}">${r.val.toFixed(1)}%</div>
+      </div>`;
+  });
+}
+
+function buildUrbanRuralBars() {
+  const cont = document.getElementById('urban-rural-bars');
+  cont.innerHTML = `<div style="display:flex;gap:16px;margin-bottom:12px;font-size:12px;">
+    <span><span style="display:inline-block;width:12px;height:12px;background:var(--azul);border-radius:2px;margin-right:4px;"></span>Urbano</span>
+    <span><span style="display:inline-block;width:12px;height:12px;background:var(--amarillo);border-radius:2px;margin-right:4px;"></span>Rural</span>
+  </div>`;
+  DATA.urbanoRural.forEach(r => {
+    const maxV = 8;
+    const pU = (r.urbano / maxV * 100).toFixed(1);
+    const pR = (r.rural  / maxV * 100).toFixed(1);
+    cont.innerHTML += `
+      <div class="stack-row">
+        <div class="stack-label">${r.nombre}</div>
+        <div class="stack-track" style="height:28px;">
+          <div class="stack-seg" style="width:${pU}%;background:var(--azul);">${r.urbano.toFixed(1)}%</div>
+          <div class="stack-seg" style="width:${pR}%;background:var(--amarillo);color:var(--azul);">${r.rural.toFixed(1)}%</div>
+        </div>
+        <div class="stack-total">${r.total.toFixed(1)}%</div>
+      </div>`;
+  });
+}
+
+// ══════════════════════════════════════
+// CHARTS
+// ══════════════════════════════════════
+const AZUL = '#0B1F5B', AZUL_M = '#1A3A8F', AMARILLO = '#F4B400', ROJO = '#D63B2F', VERDE = '#1B7A4A';
+
+function buildChartContrafactual() {
+  const IND_COLORS = {
+    'Saneamiento de excretas':  '#7B4FA6',
+    'Educ. superior económica': '#2D6EA5',
+    'Hacinamiento':             '#E8C800',
+    'Sin recolección basura':   '#2A9D8F',
+  };
+  const BRECHA_VAL = 1.527;
+  const sorted = [...DATA.contrafactual].sort((a,b) => b.impacto - a.impacto);
+
+  new Chart(document.getElementById('chart-contrafactual'), {
+    type: 'bar',
+    data: {
+      labels: sorted.map(d => d.nombre),
+      datasets: [{
+        label: 'Impacto contrafactual (pp)',
+        data: sorted.map(d => d.impacto),
+        backgroundColor: sorted.map(d => IND_COLORS[d.nombre] || '#1A3A8F'),
+        borderRadius: 6,
+        borderSkipped: false,
+      }]
+    },
+    options: {
+      indexAxis: 'y',
+      plugins: {
+        legend: { display: false },
+        tooltip: { callbacks: { label: ctx => ` ${ctx.parsed.x.toFixed(3)} pp` } }
+      },
+      scales: {
+        x: {
+          grid: { color: '#EEEEEE' },
+          min: 0, max: 4.2,
+          title: { display: true, text: 'Reducción de TPM si se retira el indicador (pp)' },
+          ticks: { callback: v => v.toFixed(1) + ' pp' }
+        },
+        y: { grid: { display: false }, ticks: { font:{size:12}, color:'#1A2752' } }
+      }
+    },
+    plugins: [{
+      afterDraw(chart) {
+        const { ctx, scales: { x, y } } = chart;
+        const xPos = x.getPixelForValue(BRECHA_VAL);
+        const top  = y.top;
+        const bot  = y.bottom;
+        ctx.save();
+        // Línea roja punteada
+        ctx.beginPath();
+        ctx.setLineDash([7, 5]);
+        ctx.strokeStyle = '#D63B2F';
+        ctx.lineWidth = 2.5;
+        ctx.moveTo(xPos, top);
+        ctx.lineTo(xPos, bot);
+        ctx.stroke();
+        // Etiqueta fondo blanco con texto rojo
+        ctx.setLineDash([]);
+        const label = 'Brecha meta (1.53 pp)';
+        ctx.font = 'bold 10.5px Barlow, sans-serif';
+        const tw = ctx.measureText(label).width;
+        const bx = xPos + 6;
+        const by = bot - 28;
+        ctx.fillStyle = 'rgba(255,255,255,0.92)';
+        ctx.strokeStyle = '#D63B2F';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.roundRect(bx - 4, by - 13, tw + 12, 20, 4);
+        ctx.fill();
+        ctx.stroke();
+        ctx.fillStyle = '#D63B2F';
+        ctx.textAlign = 'left';
+        ctx.fillText(label, bx + 2, by + 2);
+        ctx.restore();
+      }
+    }]
+  });
+}
+
+function buildDecisCards() {
+  const cont = document.getElementById('decis-cards');
+  const IND = [
+    { nombre: 'Sin saneamiento de excretas', pobl: 3.49, pobres: 9.42, color: '#7B4FA6', icon: '🚰' },
+    { nombre: 'Educ. superior (económica)',  pobl: 3.13, pobres: 8.44, color: '#2D6EA5', icon: '🎓' },
+    { nombre: 'Hacinamiento',               pobl: 2.09, pobres: 5.64, color: '#E8C800', icon: '🏠' },
+    { nombre: 'Sin recolección de basura',  pobl: 1.62, pobres: 4.37, color: '#2A9D8F', icon: '🗑️' },
+  ];
+  // Encabezado de columnas
+  cont.innerHTML = `
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px;
+                font-size:10px;font-weight:600;color:var(--subtexto);
+                padding:0 12px 4px;text-align:right;">
+      <span style="text-align:left;">Indicador</span>
+      <span>% Pob. total</span>
+      <span>% Entre pobres</span>
+    </div>`;
+  IND.forEach(d => {
+    const iconBg = d.color === '#E8C800' ? '#1A2752' : 'white';
+    cont.innerHTML += `
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;align-items:center;gap:8px;
+                  padding:12px;border-radius:10px;background:white;
+                  border:1px solid var(--gris-bd);border-left:4px solid ${d.color};">
+        <div style="display:flex;align-items:center;gap:8px;">
+          <div style="width:32px;height:32px;border-radius:50%;background:${d.color};flex-shrink:0;
+                      display:flex;align-items:center;justify-content:center;font-size:15px;color:${iconBg};">${d.icon}</div>
+          <span style="font-size:11px;font-weight:600;color:var(--azul);">${d.nombre}</span>
+        </div>
+        <div style="text-align:right;">
+          <div style="font-family:'Barlow Condensed',sans-serif;font-size:28px;font-weight:700;
+                      color:${d.color};line-height:1;">${d.pobl.toFixed(2)}%</div>
+          <div style="font-size:10px;color:var(--subtexto);">de la población total</div>
+        </div>
+        <div style="text-align:right;">
+          <div style="font-family:'Barlow Condensed',sans-serif;font-size:28px;font-weight:700;
+                      color:var(--azul);line-height:1;">${d.pobres.toFixed(2)}%</div>
+          <div style="font-size:10px;color:var(--subtexto);">de los pobres</div>
+        </div>
+      </div>`;
+  });
+}
+
+function buildChartPrevalencia() {
+  new Chart(document.getElementById('chart-prevalencia'), {
+    type: 'bar',
+    data: {
+      labels: DATA.prevalencia.map(d => d.nombre),
+      datasets: [
+        { label: 'Prevalencia total (%)', data: DATA.prevalencia.map(d => d.total), backgroundColor: AZUL_M+'CC', borderRadius:5 },
+        { label: 'Prevalencia entre pobres (%)', data: DATA.prevalencia.map(d => d.pobres), backgroundColor: ROJO+'BB', borderRadius:5 },
+      ]
+    },
+    options: {
+      plugins: { legend: { position:'bottom' } },
+      scales: {
+        x: { grid:{display:false} },
+        y: { grid:{color:'#EDF0F7'}, title:{display:true,text:'%'} }
+      }
+    }
+  });
+}
+
+function buildChartSerie() {
+  const todosLosAnos = [2021, 2022, 2023, 2024, 2025, 2026, 2027, 2028, 2029];
+  const icInf  = [38.15, 36.74, 35.09, 34.33, null, null, null, null, null];
+  const icSup  = [41.11, 40.05, 38.74, 39.37, null, null, null, null, null];
+  const tpmReal = [39.63, 38.40, 36.92, 36.85, 37.11, null, null, null, null];
+  const tpmProy = [null, null, null, 36.85, 35.58, 35.03, 34.21, 33.40, 32.59];
+  new Chart(document.getElementById('chart-serie'), {
+    type: 'line',
+    data: {
+      labels: todosLosAnos,
+      datasets: [
+        { label: '_ic_inf_hidden', data: icInf, fill: false, borderColor: 'transparent', pointRadius: 0, tension: 0.4 },
+        { label: 'Intervalo de confianza 95%', data: icSup, fill: '-1', backgroundColor: 'rgba(46,95,163,0.15)', borderColor: 'transparent', pointRadius: 0, tension: 0.4 },
+        { label: 'TPM observada (2021–2025)', data: tpmReal, borderColor: '#1F3864', borderWidth: 3, fill: false, tension: 0.3, spanGaps: false,
+          pointRadius: todosLosAnos.map(a => [2021,2022,2023,2024,2025].includes(a) ? 8 : 0),
+          pointBackgroundColor: todosLosAnos.map(a => a === 2025 ? '#D63B2F' : '#1F3864'), pointHoverRadius: 10 },
+        { label: 'Proyección ARIMA (2025–2029)', data: tpmProy, borderColor: '#E67E22', borderWidth: 2.8, borderDash: [8,4], fill: false, tension: 0, spanGaps: false,
+          pointStyle: 'rectRot', pointRadius: todosLosAnos.map(a => [2025,2026,2027,2028,2029].includes(a) ? 7 : 0),
+          pointBackgroundColor: '#E67E22', pointHoverRadius: 9 },
+        { label: 'Meta PND 2025: 35.58%', data: todosLosAnos.map(() => 35.58), borderColor: '#27AE60', borderWidth: 1.8, borderDash: [6,4], fill: false, pointRadius: 0 },
+        { label: 'Meta PND 2029: 32.59%', data: todosLosAnos.map(() => 32.59), borderColor: '#1A7A4A', borderWidth: 1.5, borderDash: [3,3], fill: false, pointRadius: 0 },
+      ]
+    },
+    options: {
+      plugins: {
+        legend: { position: 'top', labels: { font:{size:11}, filter: item => item.text !== '_ic_inf_hidden' } },
+        tooltip: { mode: 'index', intersect: false },
+      },
+      scales: {
+        x: { grid:{color:'#CCCCCC',lineWidth:0.5}, ticks:{font:{size:11}} },
+        y: { min:30.5, max:42.5, grid:{color:'#CCCCCC',lineWidth:0.6},
+             title:{display:true,text:'Tasa TPM (%)'}, ticks:{callback: val => val.toFixed(1)+'%'} }
+      }
+    }
+  });
+}
+
+// ══════════════════════════════════════
+// TERRITORIAL INTERACTIVO
+// ══════════════════════════════════════
+const TERR = {
+  indicadorActual: 'saneamiento',
+  chartProv: null, chartCant: null,
+  colores: {
+    saneamiento:  { main:'#7B4FA6', light:'#E8D5F5', total:'7.3%' },
+    educ:         { main:'#2D6EA5', light:'#D0E4F7', total:'6.8%' },
+    hacinamiento: { main:'#E8C800', light:'#FAF3A0', total:'4.9%' },
+    basura:       { main:'#2A9D8F', light:'#C2EDE7', total:'5.0%' },
+  },
+  titulos: {
+    saneamiento:  'Sin saneamiento de excretas',
+    educ:         'No acceso a educación superior (razones económicas)',
+    hacinamiento: 'Hacinamiento',
+    basura:       'Sin servicio de recolección de basura',
+  },
+  provincial: {
+    saneamiento: [{p:'Guayas',v:3.29},{p:'Manabí',v:1.103},{p:'Los Ríos',v:0.639},{p:'Santa Elena',v:0.509},{p:'Pichincha',v:0.373},{p:'Esmeraldas',v:0.365},{p:'Santo Domingo de los Tsáchilas',v:0.273},{p:'Loja',v:0.15},{p:'Imbabura',v:0.106},{p:'El Oro',v:0.095},{p:'Azuay',v:0.091},{p:'Morona Santiago',v:0.066},{p:'Cotopaxi',v:0.057},{p:'Chimborazo',v:0.034},{p:'Bolívar',v:0.032},{p:'Cañar',v:0.028},{p:'Orellana',v:0.02},{p:'Sucumbíos',v:0.019},{p:'Galápagos',v:0.014},{p:'Tungurahua',v:0.01},{p:'Carchi',v:0.009},{p:'Zamora Chinchipe',v:0.007},{p:'Pastaza',v:0.005},{p:'Napo',v:0.003}],
+    educ: [{p:'Pichincha',v:1.687},{p:'Guayas',v:1.378},{p:'Azuay',v:0.572},{p:'El Oro',v:0.382},{p:'Manabí',v:0.363},{p:'Tungurahua',v:0.321},{p:'Imbabura',v:0.305},{p:'Los Ríos',v:0.287},{p:'Loja',v:0.26},{p:'Cañar',v:0.198},{p:'Esmeraldas',v:0.179},{p:'Santa Elena',v:0.164},{p:'Cotopaxi',v:0.151},{p:'Chimborazo',v:0.102},{p:'Santo Domingo de los Tsáchilas',v:0.087},{p:'Sucumbíos',v:0.084},{p:'Bolívar',v:0.066},{p:'Carchi',v:0.063},{p:'Zamora Chinchipe',v:0.043},{p:'Orellana',v:0.033},{p:'Napo',v:0.026},{p:'Pastaza',v:0.025},{p:'Morona Santiago',v:0.017},{p:'Galápagos',v:0.009}],
+    hacinamiento: [{p:'Guayas',v:2.314},{p:'Manabí',v:0.408},{p:'Los Ríos',v:0.294},{p:'Santa Elena',v:0.293},{p:'El Oro',v:0.256},{p:'Pichincha',v:0.246},{p:'Azuay',v:0.233},{p:'Santo Domingo de los Tsáchilas',v:0.139},{p:'Esmeraldas',v:0.129},{p:'Loja',v:0.126},{p:'Cotopaxi',v:0.086},{p:'Imbabura',v:0.081},{p:'Chimborazo',v:0.061},{p:'Cañar',v:0.058},{p:'Tungurahua',v:0.038},{p:'Bolívar',v:0.027},{p:'Carchi',v:0.025},{p:'Orellana',v:0.021},{p:'Sucumbíos',v:0.014},{p:'Napo',v:0.014},{p:'Zamora Chinchipe',v:0.011},{p:'Morona Santiago',v:0.01},{p:'Galápagos',v:0.008},{p:'Pastaza',v:0.007}],
+    basura: [{p:'Guayas',v:1.486},{p:'Manabí',v:0.621},{p:'Pichincha',v:0.476},{p:'Loja',v:0.394},{p:'Los Ríos',v:0.287},{p:'Cotopaxi',v:0.238},{p:'Azuay',v:0.237},{p:'Bolívar',v:0.203},{p:'Imbabura',v:0.133},{p:'Esmeraldas',v:0.116},{p:'Santo Domingo de los Tsáchilas',v:0.103},{p:'Morona Santiago',v:0.102},{p:'Chimborazo',v:0.098},{p:'Cañar',v:0.095},{p:'Tungurahua',v:0.084},{p:'El Oro',v:0.066},{p:'Sucumbíos',v:0.063},{p:'Carchi',v:0.061},{p:'Zamora Chinchipe',v:0.057},{p:'Orellana',v:0.037},{p:'Napo',v:0.023},{p:'Pastaza',v:0.018},{p:'Galápagos',v:0.001},{p:'Santa Elena',v:0.001}],
+  },
+  cantonal: {
+    saneamiento: {
+      'Guayas': [{c:'Guayaquil',v:1.6037,pob:2880.6},{c:'A. Baquerizo Moreno',v:0.43,pob:136.3},{c:'Durán',v:0.3099,pob:293.9},{c:'El Empalme',v:0.2338,pob:182.6},{c:'Salitre',v:0.1332,pob:91.5}],
+      'Santa Elena': [{c:'Santa Elena',v:0.4196,pob:214.5},{c:'Salinas',v:0.0496,pob:86.9},{c:'La Libertad',v:0.0399,pob:120.5}],
+      'Manabí': [{c:'Portoviejo',v:0.3958,pob:419.7},{c:'Montecristi',v:0.2501,pob:231.3},{c:'Manta',v:0.1536,pob:228.8},{c:'Pichincha',v:0.1252,pob:83.6},{c:'Sucre',v:0.1139,pob:62.9}],
+      'Santo Domingo de los Tsáchilas': [{c:'Santo Domingo',v:0.1681,pob:469.5},{c:'La Concordia',v:0.1046,pob:68.0}],
+      'Los Ríos': [{c:'Valencia',v:0.2144,pob:164.5},{c:'Quevedo',v:0.1461,pob:118.3},{c:'Babahoyo',v:0.0849,pob:224.5},{c:'Vinces',v:0.0848,pob:115.8},{c:'Buena Fe',v:0.0292,pob:75.6}],
+      'Pichincha': [{c:'Cayambe',v:0.2488,pob:240.6},{c:'D.M. De Quito',v:0.0621,pob:2835.6},{c:'Mejía',v:0.0335,pob:88.2},{c:'Puerto Quito',v:0.0221,pob:30.4},{c:'P.V. Maldonado',v:0.004,pob:30.8}],
+      'Esmeraldas': [{c:'Quinindé',v:0.0895,pob:162.5},{c:'San Lorenzo',v:0.0777,pob:92.8},{c:'Atacames',v:0.0761,pob:81.5},{c:'Eloy Alfaro',v:0.0521,pob:66.7},{c:'Esmeraldas',v:0.0362,pob:220.7}],
+      'Loja': [{c:'Saraguro',v:0.0597,pob:45.5},{c:'Loja',v:0.0477,pob:218.3},{c:'Catamayo',v:0.0188,pob:51.9},{c:'Espíndola',v:0.0082,pob:9.5},{c:'Zapotillo',v:0.0037,pob:28.3}],
+      'Imbabura': [{c:'Cotacachi',v:0.0553,pob:100.5},{c:'Ibarra',v:0.023,pob:218.5},{c:'Otavalo',v:0.0204,pob:136.9},{c:'Pimampiro',v:0.0047,pob:9.6},{c:'Antonio Ante',v:0.0025,pob:47.5}],
+      'El Oro': [{c:'Machala',v:0.0413,pob:294.7},{c:'Huaquillas',v:0.0176,pob:63.0},{c:'El Guabo',v:0.0157,pob:115.4},{c:'Pasaje',v:0.0111,pob:68.4},{c:'Santa Rosa',v:0.0048,pob:57.7}],
+      'Azuay': [{c:'Cuenca',v:0.0711,pob:687.8},{c:'C.P. Enríquez',v:0.0117,pob:26.0},{c:'Gualaceo',v:0.0076,pob:61.7}],
+      'Morona Santiago': [{c:'Taisha',v:0.0565,pob:155.3},{c:'Morona',v:0.0028,pob:8.1},{c:'Logroño',v:0.0022,pob:10.4},{c:'Huamboya',v:0.0018,pob:6.2},{c:'Tiwintza',v:0.0018,pob:11.1}],
+      'Cotopaxi': [{c:'La Maná',v:0.0496,pob:78.2},{c:'Saquisilí',v:0.0058,pob:81.2},{c:'Salcedo',v:0.0009,pob:51.7},{c:'Pujilí',v:0.0007,pob:48.5}],
+      'Chimborazo': [{c:'Colta',v:0.019,pob:39.4},{c:'Cumandá',v:0.0059,pob:16.7},{c:'Riobamba',v:0.0026,pob:322.6},{c:'Alausí',v:0.0025,pob:140.9}],
+      'Bolívar': [{c:'Guaranda',v:0.0202,pob:172.2},{c:'Las Naves',v:0.0045,pob:4.2},{c:'Caluma',v:0.004,pob:11.3},{c:'San Miguel',v:0.0024,pob:37.3}],
+      'Cañar': [{c:'La Troncal',v:0.0119,pob:76.0},{c:'Azogues',v:0.0063,pob:105.9},{c:'Cañar',v:0.0056,pob:66.2},{c:'Suscal',v:0.0041,pob:10.7}],
+      'Orellana': [{c:'F. De Orellana',v:0.0185,pob:72.4},{c:'La Joya De Los Sachas',v:0.0009,pob:21.3},{c:'Loreto',v:0.0003,pob:25.4}],
+      'Sucumbíos': [{c:'Lago Agrio',v:0.0115,pob:121.0},{c:'Shushufindi',v:0.0051,pob:66.1},{c:'Cascales',v:0.0023,pob:12.9}],
+      'Galápagos': [{c:'Santa Cruz',v:0.0145,pob:21.8}],
+      'Carchi': [{c:'Tulcán',v:0.0065,pob:135.6},{c:'Montúfar',v:0.0013,pob:31.5},{c:'Bolívar',v:0.0005,pob:7.6}],
+      'Tungurahua': [{c:'Ambato',v:0.0071,pob:451.2},{c:'Stgo. De Píllaro',v:0.0021,pob:38.8}],
+      'Zamora Chinchipe': [{c:'Palanda',v:0.0038,pob:9.6},{c:'Chinchipe',v:0.0018,pob:8.8},{c:'Yantzaza',v:0.0007,pob:19.4},{c:'Zamora',v:0.0007,pob:31.8}],
+      'Napo': [{c:'Tena',v:0.0017,pob:90.9},{c:'C.J. Arosemena Tola',v:0.0013,pob:7.7}],
+      'Pastaza': [{c:'Pastaza',v:0.0044,pob:86.1},{c:'Santa Clara',v:0.0003,pob:8.4}],
+    },
+    educ: {
+      'Pichincha': [{c:'D.M. De Quito',v:1.2395,pob:2835.6},{c:'Cayambe',v:0.2698,pob:240.6},{c:'Mejía',v:0.0534,pob:88.2},{c:'S.M. De Los Bancos',v:0.0393,pob:35.9},{c:'Puerto Quito',v:0.0306,pob:30.4}],
+      'Guayas': [{c:'Guayaquil',v:1.1146,pob:2880.6},{c:'Palestina',v:0.0838,pob:127.2},{c:'A. Baquerizo Moreno',v:0.0821,pob:136.3},{c:'Durán',v:0.038,pob:293.9},{c:'Santa Lucía',v:0.0139,pob:67.5}],
+      'Azuay': [{c:'Cuenca',v:0.3083,pob:687.8},{c:'Gualaceo',v:0.138,pob:61.7},{c:'Sígsig',v:0.0572,pob:57.9},{c:'Nabón',v:0.0171,pob:12.9},{c:'C.P. Enríquez',v:0.0147,pob:26.0}],
+      'El Oro': [{c:'Machala',v:0.1126,pob:294.7},{c:'Huaquillas',v:0.0781,pob:63.0},{c:'Pasaje',v:0.0632,pob:68.4},{c:'El Guabo',v:0.0257,pob:115.4},{c:'Portovelo',v:0.022,pob:9.2}],
+      'Manabí': [{c:'Portoviejo',v:0.1272,pob:419.7},{c:'Montecristi',v:0.0766,pob:231.3},{c:'Manta',v:0.0666,pob:228.8},{c:'Junín',v:0.0656,pob:66.6},{c:'24 De Mayo',v:0.0236,pob:102.3}],
+      'Tungurahua': [{c:'Ambato',v:0.2787,pob:451.2},{c:'Patate',v:0.0123,pob:13.3},{c:'Baños',v:0.0108,pob:30.6},{c:'Stgo. De Píllaro',v:0.0082,pob:38.8},{c:'S.P. De Pelileo',v:0.0053,pob:53.6}],
+      'Imbabura': [{c:'Otavalo',v:0.1035,pob:136.9},{c:'Ibarra',v:0.0763,pob:218.5},{c:'Cotacachi',v:0.0745,pob:100.5},{c:'Antonio Ante',v:0.0335,pob:47.5},{c:'Pimampiro',v:0.009,pob:9.6}],
+      'Los Ríos': [{c:'Buena Fe',v:0.0929,pob:75.6},{c:'Babahoyo',v:0.0438,pob:224.5},{c:'Quevedo',v:0.0379,pob:118.3},{c:'Palenque',v:0.0319,pob:30.8},{c:'Vinces',v:0.0319,pob:115.8}],
+      'Loja': [{c:'Loja',v:0.0831,pob:218.3},{c:'Celica',v:0.0504,pob:63.9},{c:'Paltas',v:0.026,pob:42.7},{c:'Espíndola',v:0.0197,pob:9.5},{c:'Puyango',v:0.0161,pob:6.6}],
+      'Cañar': [{c:'Cañar',v:0.084,pob:66.2},{c:'Azogues',v:0.0654,pob:105.9},{c:'Déleg',v:0.033,pob:23.9},{c:'La Troncal',v:0.0126,pob:76.0}],
+      'Esmeraldas': [{c:'San Lorenzo',v:0.0486,pob:92.8},{c:'Esmeraldas',v:0.0415,pob:220.7},{c:'Quinindé',v:0.0254,pob:162.5},{c:'Eloy Alfaro',v:0.0245,pob:66.7},{c:'Atacames',v:0.0222,pob:81.5}],
+      'Santa Elena': [{c:'La Libertad',v:0.0872,pob:120.5},{c:'Santa Elena',v:0.0597,pob:214.5},{c:'Salinas',v:0.0175,pob:86.9}],
+      'Cotopaxi': [{c:'Pujilí',v:0.0434,pob:48.5},{c:'Latacunga',v:0.0422,pob:164.0},{c:'La Maná',v:0.0413,pob:78.2},{c:'Saquisilí',v:0.0147,pob:81.2}],
+      'Chimborazo': [{c:'Riobamba',v:0.0645,pob:322.6},{c:'Colta',v:0.0154,pob:39.4},{c:'Cumandá',v:0.0085,pob:16.7},{c:'Alausí',v:0.006,pob:140.9}],
+      'Santo Domingo de los Tsáchilas': [{c:'Santo Domingo',v:0.0849,pob:469.5},{c:'La Concordia',v:0.0018,pob:68.0}],
+      'Sucumbíos': [{c:'Lago Agrio',v:0.0514,pob:121.0},{c:'Shushufindi',v:0.011,pob:66.1},{c:'Cascales',v:0.0044,pob:12.9}],
+      'Bolívar': [{c:'Guaranda',v:0.0578,pob:172.2},{c:'San Miguel',v:0.0037,pob:37.3},{c:'Caluma',v:0.0029,pob:11.3}],
+      'Carchi': [{c:'Tulcán',v:0.0291,pob:135.6},{c:'Espejo',v:0.0107,pob:14.3},{c:'Montúfar',v:0.0107,pob:31.5}],
+      'Zamora Chinchipe': [{c:'Yantzaza',v:0.0179,pob:19.4},{c:'Zamora',v:0.0091,pob:31.8},{c:'Palanda',v:0.0048,pob:9.6}],
+      'Orellana': [{c:'F. De Orellana',v:0.0233,pob:72.4},{c:'La Joya De Los Sachas',v:0.0061,pob:21.3},{c:'Loreto',v:0.0022,pob:25.4}],
+      'Napo': [{c:'Tena',v:0.0209,pob:90.9},{c:'Archidona',v:0.0034,pob:40.9}],
+      'Pastaza': [{c:'Pastaza',v:0.013,pob:86.1},{c:'Arajuno',v:0.0062,pob:14.5},{c:'Santa Clara',v:0.0037,pob:8.4}],
+      'Morona Santiago': [{c:'Huamboya',v:0.0074,pob:6.2},{c:'Gualaquiza',v:0.0033,pob:6.2},{c:'Morona',v:0.0017,pob:8.1}],
+      'Galápagos': [{c:'Santa Cruz',v:0.0066,pob:21.8},{c:'San Cristóbal',v:0.0011,pob:11.7}],
+    },
+    hacinamiento: {
+      'Guayas': [{c:'Guayaquil',v:1.6195,pob:2880.6},{c:'Durán',v:0.2247,pob:293.9},{c:'El Empalme',v:0.1238,pob:182.6},{c:'Santa Lucía',v:0.1027,pob:67.5},{c:'Daule',v:0.1023,pob:136.9}],
+      'Manabí': [{c:'Pichincha',v:0.1403,pob:83.6},{c:'Portoviejo',v:0.1135,pob:419.7},{c:'Montecristi',v:0.0749,pob:231.3},{c:'24 De Mayo',v:0.0321,pob:102.3},{c:'Jipijapa',v:0.0162,pob:55.5}],
+      'Los Ríos': [{c:'Palenque',v:0.0717,pob:30.8},{c:'Babahoyo',v:0.0477,pob:224.5},{c:'Buena Fe',v:0.0359,pob:75.6},{c:'Vinces',v:0.0286,pob:115.8},{c:'Urdaneta',v:0.0226,pob:30.7}],
+      'Santa Elena': [{c:'Salinas',v:0.1265,pob:86.9},{c:'Santa Elena',v:0.122,pob:214.5},{c:'La Libertad',v:0.0445,pob:120.5}],
+      'El Oro': [{c:'Arenillas',v:0.0873,pob:57.6},{c:'Machala',v:0.0851,pob:294.7},{c:'Huaquillas',v:0.0267,pob:63.0},{c:'Zaruma',v:0.0212,pob:44.1},{c:'Pasaje',v:0.0158,pob:68.4}],
+      'Pichincha': [{c:'D.M. De Quito',v:0.232,pob:2835.6},{c:'Cayambe',v:0.0099,pob:240.6},{c:'S.M. De Los Bancos',v:0.0018,pob:35.9},{c:'Mejía',v:0.0018,pob:88.2}],
+      'Azuay': [{c:'Cuenca',v:0.1913,pob:687.8},{c:'Sígsig',v:0.0369,pob:57.9},{c:'C.P. Enríquez',v:0.005,pob:26.0}],
+      'Santo Domingo de los Tsáchilas': [{c:'Santo Domingo',v:0.1331,pob:469.5},{c:'La Concordia',v:0.0062,pob:68.0}],
+      'Esmeraldas': [{c:'Esmeraldas',v:0.0506,pob:220.7},{c:'San Lorenzo',v:0.042,pob:92.8},{c:'Atacames',v:0.0162,pob:81.5},{c:'Eloy Alfaro',v:0.0073,pob:66.7},{c:'Quinindé',v:0.0055,pob:162.5}],
+      'Loja': [{c:'Loja',v:0.0439,pob:218.3},{c:'Saraguro',v:0.0261,pob:45.5},{c:'Macará',v:0.0143,pob:22.9},{c:'Catamayo',v:0.0139,pob:51.9},{c:'Paltas',v:0.0085,pob:42.7}],
+      'Cotopaxi': [{c:'La Maná',v:0.0672,pob:78.2},{c:'Saquisilí',v:0.0144,pob:81.2},{c:'Latacunga',v:0.0046,pob:164.0}],
+      'Imbabura': [{c:'Ibarra',v:0.0389,pob:218.5},{c:'Otavalo',v:0.021,pob:136.9},{c:'Cotacachi',v:0.0172,pob:100.5}],
+      'Chimborazo': [{c:'Riobamba',v:0.0489,pob:322.6},{c:'Alausí',v:0.0116,pob:140.9}],
+      'Cañar': [{c:'La Troncal',v:0.033,pob:76.0},{c:'Biblián',v:0.0132,pob:33.9},{c:'Cañar',v:0.0072,pob:66.2},{c:'Azogues',v:0.004,pob:105.9}],
+      'Bolívar': [{c:'Guaranda',v:0.0189,pob:172.2},{c:'San Miguel',v:0.0032,pob:37.3},{c:'Las Naves',v:0.0024,pob:4.2}],
+      'Carchi': [{c:'Montúfar',v:0.0125,pob:31.5},{c:'Tulcán',v:0.0092,pob:135.6}],
+      'Orellana': [{c:'F. De Orellana',v:0.0167,pob:72.4},{c:'Loreto',v:0.0024,pob:25.4}],
+      'Sucumbíos': [{c:'Lago Agrio',v:0.0128,pob:121.0},{c:'Shushufindi',v:0.0009,pob:66.1}],
+      'Tungurahua': [{c:'Ambato',v:0.0333,pob:451.2},{c:'S.P. De Pelileo',v:0.0023,pob:53.6},{c:'Stgo. De Píllaro',v:0.0021,pob:38.8}],
+      'Morona Santiago': [{c:'Sucúa',v:0.0036,pob:8.6},{c:'Huamboya',v:0.0019,pob:6.2},{c:'Morona',v:0.001,pob:8.1}],
+      'Galápagos': [{c:'Santa Cruz',v:0.0081,pob:21.8}],
+      'Zamora Chinchipe': [{c:'Centinela Del Cóndor',v:0.0033,pob:4.4},{c:'Nangaritza',v:0.0024,pob:22.8},{c:'Zamora',v:0.0017,pob:31.8}],
+      'Napo': [{c:'Tena',v:0.0082,pob:90.9},{c:'Archidona',v:0.0056,pob:40.9}],
+      'Pastaza': [{c:'Pastaza',v:0.0053,pob:86.1},{c:'Santa Clara',v:0.0007,pob:8.4}],
+    },
+    basura: {
+      'Guayas': [{c:'Playas',v:0.9095,pob:422.5},{c:'Daule',v:0.1175,pob:136.9},{c:'El Empalme',v:0.1131,pob:182.6},{c:'Guayaquil',v:0.0766,pob:2880.6},{c:'Salitre',v:0.0628,pob:91.5}],
+      'Manabí': [{c:'Pichincha',v:0.1291,pob:83.6},{c:'Santa Ana',v:0.1016,pob:56.1},{c:'Portoviejo',v:0.1007,pob:419.7},{c:'Junín',v:0.0798,pob:66.6},{c:'Jipijapa',v:0.0636,pob:55.5}],
+      'Pichincha': [{c:'Cayambe',v:0.3298,pob:240.6},{c:'D.M. De Quito',v:0.0555,pob:2835.6},{c:'Pedro Moncayo',v:0.037,pob:42.0},{c:'Puerto Quito',v:0.0314,pob:30.4},{c:'Mejía',v:0.0116,pob:88.2}],
+      'Loja': [{c:'Loja',v:0.0762,pob:218.3},{c:'Celica',v:0.0739,pob:63.9},{c:'Paltas',v:0.0414,pob:42.7},{c:'Sozoranga',v:0.038,pob:19.0},{c:'Zapotillo',v:0.0341,pob:28.3}],
+      'Los Ríos': [{c:'Vinces',v:0.0557,pob:115.8},{c:'Puebloviejo',v:0.051,pob:94.4},{c:'Ventanas',v:0.044,pob:76.8},{c:'Babahoyo',v:0.0338,pob:224.5},{c:'Quevedo',v:0.0308,pob:118.3}],
+      'Cotopaxi': [{c:'Saquisilí',v:0.0441,pob:81.2},{c:'Pangua',v:0.0377,pob:72.1},{c:'La Maná',v:0.0366,pob:78.2},{c:'Latacunga',v:0.0349,pob:164.0},{c:'Sigchos',v:0.0325,pob:48.9}],
+      'Azuay': [{c:'Gualaceo',v:0.0878,pob:61.7},{c:'Cuenca',v:0.0697,pob:687.8},{c:'Santa Isabel',v:0.0302,pob:9.0},{c:'El Pan',v:0.0148,pob:6.7},{c:'Sígsig',v:0.0128,pob:57.9}],
+      'Bolívar': [{c:'Guaranda',v:0.1346,pob:172.2},{c:'San Miguel',v:0.0503,pob:37.3},{c:'Chillanes',v:0.0169,pob:9.6}],
+      'Imbabura': [{c:'Cotacachi',v:0.0655,pob:100.5},{c:'Ibarra',v:0.0377,pob:218.5},{c:'Otavalo',v:0.0184,pob:136.9},{c:'Antonio Ante',v:0.0074,pob:47.5}],
+      'Esmeraldas': [{c:'Quinindé',v:0.0531,pob:162.5},{c:'Eloy Alfaro',v:0.03,pob:66.7},{c:'San Lorenzo',v:0.0165,pob:92.8}],
+      'Santo Domingo de los Tsáchilas': [{c:'Santo Domingo',v:0.0954,pob:469.5},{c:'La Concordia',v:0.0072,pob:68.0}],
+      'Morona Santiago': [{c:'Taisha',v:0.0842,pob:155.3},{c:'Huamboya',v:0.0102,pob:6.2},{c:'Morona',v:0.003,pob:8.1}],
+      'Chimborazo': [{c:'Riobamba',v:0.0424,pob:322.6},{c:'Alausí',v:0.029,pob:140.9},{c:'Colta',v:0.0165,pob:39.4}],
+      'Cañar': [{c:'Déleg',v:0.0369,pob:23.9},{c:'Cañar',v:0.0277,pob:66.2},{c:'Azogues',v:0.0251,pob:105.9}],
+      'Tungurahua': [{c:'Ambato',v:0.0422,pob:451.2},{c:'Patate',v:0.0129,pob:13.3},{c:'Stgo. De Píllaro',v:0.0115,pob:38.8}],
+      'El Oro': [{c:'Zaruma',v:0.026,pob:44.1},{c:'Santa Rosa',v:0.0124,pob:57.7},{c:'Machala',v:0.0116,pob:294.7}],
+      'Carchi': [{c:'Montúfar',v:0.0243,pob:31.5},{c:'Tulcán',v:0.0175,pob:135.6},{c:'Mira',v:0.0093,pob:7.9}],
+      'Sucumbíos': [{c:'Lago Agrio',v:0.0453,pob:121.0},{c:'Shushufindi',v:0.016,pob:66.1}],
+      'Orellana': [{c:'F. De Orellana',v:0.0188,pob:72.4},{c:'Aguarico',v:0.011,pob:56.0},{c:'La Joya De Los Sachas',v:0.0052,pob:21.3}],
+      'Napo': [{c:'Tena',v:0.0128,pob:90.9},{c:'C.J. Arosemena Tola',v:0.0056,pob:7.7},{c:'Archidona',v:0.0049,pob:40.9}],
+      'Pastaza': [{c:'Pastaza',v:0.0159,pob:86.1},{c:'Mera',v:0.0012,pob:12.0}],
+      'Zamora Chinchipe': [{c:'Yantzaza',v:0.0368,pob:19.4},{c:'Palanda',v:0.01,pob:9.6},{c:'El Pangui',v:0.0055,pob:18.4}],
+      'Galápagos': [{c:'San Cristóbal',v:0.0008,pob:11.7}],
+      'Santa Elena': [{c:'Santa Elena',v:0.001,pob:214.5}],
+    },
+  },
+};
+
+function seleccionarIndicador(ind, btn) {
+  TERR.indicadorActual = ind;
+  document.querySelectorAll('.ind-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('titulo-provincial').textContent = TERR.titulos[ind];
+  document.getElementById('total-nacional-badge').textContent = TERR.colores[ind].total + ' nacional';
+  limpiarCantonal();
+  renderProvincial(ind);
+  renderProvList(ind);
+}
+
+function renderProvincial(ind) {
+  const datos = [...TERR.provincial[ind]].sort((a,b) => b.v - a.v);
+  const col   = TERR.colores[ind];
+  const top5  = [...TERR.provincial[ind]].sort((a,b) => b.v - a.v).slice(0,5).map(d => d.p);
+  const colors = datos.map(d => top5.includes(d.p) ? col.main : col.light);
+  if (TERR.chartProv) { TERR.chartProv.destroy(); TERR.chartProv = null; }
+  TERR.chartProv = new Chart(document.getElementById('chart-prov-ind'), {
+    type: 'bar',
+    data: {
+      labels: datos.map(d => d.p),
+      datasets: [{ label: 'Contribución (%)', data: datos.map(d => d.v), backgroundColor: colors, borderRadius: 4, borderSkipped: false }]
+    },
+    options: {
+      indexAxis: 'y',
+      onClick: (evt, elements) => { if (elements.length) renderCantonal(ind, datos[elements[0].index].p); },
+      plugins: {
+        legend: { display: false },
+        tooltip: { callbacks: { label: ctx => ` ${ctx.parsed.x.toFixed(3)}%`, afterLabel: () => ' 👆 Clic para ver cantones' } }
+      },
+      scales: {
+        x: { grid:{color:'#EEEEEE'}, title:{display:true,text:'Contribución al resultado TPM nacional (%)'}, ticks:{callback: v => v.toFixed(2)+'%'} },
+        y: { grid:{display:false}, ticks:{font:{size:10},color:'#1A2752'} }
+      },
+      onHover: (evt, elements) => {
+        document.getElementById('chart-prov-ind').style.cursor = elements.length ? 'pointer' : 'default';
+      }
+    }
+  });
+}
+
+function renderCantonal(ind, prov) {
+  const cantData = TERR.cantonal[ind]?.[prov];
+  const col = TERR.colores[ind];
+  document.getElementById('titulo-cantonal').textContent = prov;
+  document.getElementById('sub-cantonal').textContent = TERR.titulos[ind] + ' · Top cantones';
+  document.getElementById('btn-volver').style.display = 'block';
+  if (!cantData || cantData.length === 0) {
+    document.getElementById('body-cantonal').innerHTML = `<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:260px;color:var(--subtexto);gap:10px;"><div style="font-size:32px;">📭</div><div style="font-size:13px;">Sin datos cantonales para esta provincia</div></div>`;
+    return;
+  }
+  const sorted = [...cantData].sort((a,b) => b.v - a.v);
+  const colors = sorted.map((d,i) => i === 0 ? col.main : col.light);
+  document.getElementById('body-cantonal').innerHTML = '<canvas id="chart-cant-ind" height="280"></canvas>';
+  if (TERR.chartCant) { TERR.chartCant.destroy(); TERR.chartCant = null; }
+  TERR.chartCant = new Chart(document.getElementById('chart-cant-ind'), {
+    type: 'bar',
+    data: {
+      labels: sorted.map(d => d.c),
+      datasets: [{ label: 'Contribución (%)', data: sorted.map(d => d.v), backgroundColor: colors, borderRadius: 4 }]
+    },
+    options: {
+      indexAxis: 'y',
+      plugins: {
+        legend: { display: false },
+        tooltip: { callbacks: { label: ctx => ` ${ctx.parsed.x.toFixed(4)}%`, afterLabel: ctx => `  ${sorted[ctx.dataIndex].pob}k hab.` } }
+      },
+      scales: {
+        x: { grid:{color:'#EEEEEE'}, title:{display:true,text:'Contribución al resultado TPM nacional (%)'}, ticks:{callback: v => v.toFixed(3)+'%'} },
+        y: { grid:{display:false}, ticks:{font:{size:11},color:'#1A2752'} }
+      }
+    }
+  });
+}
+
+function limpiarCantonal() {
+  if (TERR.chartCant) { TERR.chartCant.destroy(); TERR.chartCant = null; }
+  document.getElementById('titulo-cantonal').textContent = '← Selecciona una provincia';
+  document.getElementById('sub-cantonal').textContent = 'del listado o del gráfico';
+  document.getElementById('btn-volver').style.display = 'none';
+  document.getElementById('body-cantonal').innerHTML = `
+    <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;
+                height:220px;color:var(--subtexto);gap:10px;">
+      <div style="font-size:32px;">👆</div>
+      <div style="font-size:13px;font-weight:500;">Selecciona una provincia</div>
+      <div style="font-size:12px;">del listado de arriba o del gráfico</div>
+    </div>`;
+  // Clear selected state in list
+  document.querySelectorAll('.prov-list-item').forEach(el => el.classList.remove('selected'));
+}
+
+function renderProvList(ind) {
+  const datos = [...TERR.provincial[ind]].sort((a,b) => b.v - a.v);
+  const col   = TERR.colores[ind];
+  const maxV  = datos[0].v;
+  const cont  = document.getElementById('prov-lista');
+  if (!cont) return;
+
+  document.getElementById('titulo-prov-lista').textContent =
+    'Ranking · ' + TERR.titulos[ind].split(' ').slice(0,3).join(' ') + '...';
+
+  cont.innerHTML = datos.map((d, i) => {
+    const barW = Math.max((d.v / maxV * 100), 2).toFixed(0);
+    return `
+      <div class="prov-list-item" onclick="seleccionarDesdeLista('${ind}','${d.p}',this)">
+        <div class="prov-list-rank">${i+1}</div>
+        <div class="prov-list-name">${d.p}</div>
+        <div class="prov-list-bar-wrap">
+          <div class="prov-list-bar" style="width:${barW}px;max-width:80px;background:${d.v > 0 ? col.main : col.light};opacity:0.8;"></div>
+          <div class="prov-list-val" style="color:${col.main};">${d.v.toFixed(2)}%</div>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+function seleccionarDesdeLista(ind, prov, el) {
+  // Mark selected in list
+  document.querySelectorAll('.prov-list-item').forEach(e => e.classList.remove('selected'));
+  el.classList.add('selected');
+  // Highlight bar in chart
+  if (TERR.chartProv) {
+    const datos = [...TERR.provincial[ind]].sort((a,b) => b.v - a.v);
+    const idx = datos.findIndex(d => d.p === prov);
+    const col = TERR.colores[ind];
+    const top5 = datos.slice(0,5).map(d => d.p);
+    TERR.chartProv.data.datasets[0].backgroundColor = datos.map((d,i) =>
+      d.p === prov ? col.main : (top5.includes(d.p) ? col.main + 'BB' : col.light)
+    );
+    TERR.chartProv.update('none');
+  }
+  renderCantonal(ind, prov);
+}
+
+// ══════════════════════════════════════
+// CRONOGRAMA DE GESTIÓN
+// ══════════════════════════════════════
+const CRON_DATA = {
+  MDH: {
+    nombre: 'Ministerio de Desarrollo Humano',
+    sigla:  'MDH',
+    mes:    'Marzo 2026',
+    indicadores: ['Desempleo/subempleo', 'No contrib. pensiones', 'Educ. superior económica'],
+    acciones: [
+      {
+        num: 1,
+        titulo: 'Entregar el Crédito de Desarrollo Humano a usuarios de Bonos y Pensiones del MDH',
+        desc: 'Acceso a financiamiento mediante CDH a usuarios de bonos y pensiones para iniciar o fortalecer emprendimientos.',
+        tipo: 'Política Pública',
+        fecha_ini: 'Ene 2026', fecha_fin: 'Dic 2026',
+        frecuencia: 'Mensual',
+        resultados: 'Marzo 2026: 4.183 CDH entregados — USD $4.451.142',
+        pct: 7.02,
+        estado: 'En ejecución',
+        justificacion: 'Cumplido conforme al monto planificado mensualmente.',
+        enlace: 'https://info.desarrollohumano.gob.ec',
+      },
+      {
+        num: 2,
+        titulo: 'Desarrollar las capacidades de usuarios que buscan acceder al CDH o ampliar conocimientos',
+        desc: 'Escuelas de Inclusión Económica (EIE) y Empleabilidad y Autoempleo (EEA) para fortalecer competencias.',
+        tipo: 'Política Pública',
+        fecha_ini: 'Ene 2026', fecha_fin: 'Dic 2026',
+        frecuencia: 'Mensual',
+        resultados: '6.840 personas capacitadas en EIE y EEA a marzo 2026.',
+        pct: 10.40,
+        estado: 'En ejecución',
+        justificacion: 'Cumplido conforme al periodo de Marzo 2026.',
+        enlace: 'https://info.desarrollohumano.gob.ec',
+      },
+      {
+        num: 3,
+        titulo: 'Ejecutar las prácticas del Sistema Nacional de Comercialización Inclusiva',
+        desc: 'Acceso a mercados para emprendedores del CDH y la Economía Popular y Solidaria.',
+        tipo: 'Política Pública',
+        fecha_ini: 'Ene 2026', fecha_fin: 'Nov 2026',
+        frecuencia: 'Mensual',
+        resultados: '522 emprendedores participaron en prácticas del SNCI en marzo 2026.',
+        pct: 100,
+        estado: 'Cumplido',
+        justificacion: 'Meta del periodo alcanzada al 100%.',
+        enlace: 'https://minube.desarrollohumano.gob.ec',
+      },
+      {
+        num: 4,
+        titulo: 'Desarrollar capacidades blandas de jóvenes de 18-29 años en situación de pobreza',
+        desc: 'Capacitación técnica, profesional y habilidades blandas para jóvenes vulnerables.',
+        tipo: 'Programa',
+        fecha_ini: 'Ene 2026', fecha_fin: 'Dic 2026',
+        frecuencia: 'Mensual',
+        resultados: '67 jóvenes capacitados en habilidades blandas a marzo 2026.',
+        pct: 100,
+        estado: 'Cumplido',
+        justificacion: 'Cumplido en el periodo reportado.',
+        enlace: 'https://minube.desarrollohumano.gob.ec',
+      },
+      {
+        num: 5,
+        titulo: 'Fortalecer las capacidades para la empleabilidad de jóvenes en vulnerabilidad',
+        desc: 'Formación socioemocional y empleabilidad juvenil — Proyecto Jóvenes en Acción.',
+        tipo: 'Proyecto',
+        fecha_ini: 'Ene 2026', fecha_fin: 'Dic 2026',
+        frecuencia: 'Trimestral',
+        resultados: '1.718 jóvenes capacitados; 1.289 con atención integral via Analistas de Juventudes.',
+        pct: 10.61,
+        estado: 'En ejecución',
+        justificacion: 'Retraso en contratación de mentores. Ejecución presupuestaria en inversión: 11%.',
+        enlace: 'https://n9.cl/55b8k',
+      },
+    ],
+  },
+  MINEDEC: {
+    nombre: 'Ministerio de Educación, Deporte y Cultura',
+    sigla:  'MINEDEC',
+    mes:    'Planificación 2026',
+    indicadores: ['No acceso a educación superior (económica)', 'Logro educativo incompleto'],
+    acciones: [
+      { num:1, titulo:'Otorgar becas para estudios de cuarto nivel, enfocadas al sector hidrocarburos',
+        desc:'Becas de estudio para especialización de la industria de hidrocarburos, contribuyendo al desarrollo y talento humano del país.',
+        tipo:'Programa', fecha_ini:'Abr 2026', fecha_fin:'Jun 2026', frecuencia:'Trimestral',
+        resultados:'Sin resultados reportados al período.', pct:0, estado:'En ejecución',
+        justificacion:'Riesgo: si los adjudicatarios no suscriben contratos de financiamiento, el monto total planificado podría no ejecutarse.',
+        enlace:''},
+      { num:2, titulo:'Implementar programa de becas para reducción de la brecha digital',
+        desc:'Becas enfocadas al cierre de la brecha digital en zonas urbano-marginales, rurales y fronterizas.',
+        tipo:'Programa', fecha_ini:'Jul 2026', fecha_fin:'Sep 2026', frecuencia:'Trimestral',
+        resultados:'Sin resultados reportados al período.', pct:0, estado:'No iniciado',
+        justificacion:'Período de ejecución aún no iniciado. Riesgo de sub-ejecución si los adjudicatarios no suscriben contratos.',
+        enlace:''},
+      { num:3, titulo:'Otorgar becas y ayudas económicas para estudios de educación superior y capacitación continua',
+        desc:'Proyecto Desarrollando el Talento Humano: acceso a tercer y cuarto nivel, formación continua y empleabilidad.',
+        tipo:'Proyecto', fecha_ini:'Oct 2026', fecha_fin:'Dic 2026', frecuencia:'Trimestral',
+        resultados:'Sin resultados reportados al período.', pct:0, estado:'No iniciado',
+        justificacion:'Período aún no iniciado. Requiere dictamen de prioridad para acceder a los recursos asignados.',
+        enlace:''},
+      { num:4, titulo:'Fortalecer el acceso a educación superior técnica mediante el curso de nivelación IMPÚLSAT',
+        desc:'Curso de nivelación para aspirantes de 18-29 años a institutos técnicos y tecnológicos públicos.',
+        tipo:'Programa', fecha_ini:'Ene 2026', fecha_fin:'Dic 2026', frecuencia:'Trimestral',
+        resultados:'Sin resultados reportados al período.', pct:0, estado:'En ejecución',
+        justificacion:'Riesgo: baja difusión podría reducir participación. El curso no es obligatorio.',
+        enlace:''},
+      { num:5, titulo:'Aplicar políticas de acción afirmativa para postulantes en situación de vulnerabilidad socioeconómica',
+        desc:'Mecanismos de priorización por condición socioeconómica y grupos de atención prioritaria en el acceso a educación superior pública.',
+        tipo:'Política Pública', fecha_ini:'Ene 2026', fecha_fin:'Nov 2026', frecuencia:'Trimestral',
+        resultados:'Sin resultados reportados al período.', pct:0, estado:'En ejecución',
+        justificacion:'Riesgo: inconsistencias en información de carteras de Estado pueden afectar la identificación de beneficiarios.',
+        enlace:''},
+      { num:6, titulo:'Gestionar con las IES el registro de oferta de cupos por período académico',
+        desc:'Coordinación con instituciones de educación superior públicas para carga de cupos conforme al cronograma nacional.',
+        tipo:'Actividad relevante', fecha_ini:'Ene 2026', fecha_fin:'Dic 2026', frecuencia:'Trimestral',
+        resultados:'Sin resultados reportados al período.', pct:0, estado:'En ejecución',
+        justificacion:'Riesgo: disminución del presupuesto a educación superior podría reducir el número de cupos ofertados.',
+        enlace:''},
+      { num:7, titulo:'Gestionar los procesos de acceso a la educación superior de personas privadas de la libertad',
+        desc:'Coordinación con el SNAI para que las PPL puedan acceder al proceso de admisión a la educación superior.',
+        tipo:'Actividad relevante', fecha_ini:'Ene 2026', fecha_fin:'Dic 2026', frecuencia:'Trimestral',
+        resultados:'Sin resultados reportados al período.', pct:0, estado:'En ejecución',
+        justificacion:'Riesgo: crisis penitenciarias de seguridad podrían disminuir el número de PPL participantes.',
+        enlace:''},
+    ],
+  },
+  MIT: {
+    nombre: 'Ministerio de Infraestructura y Trabajo',
+    sigla:  'MIT',
+    mes:    'Planificación 2026',
+    indicadores: ['Desempleo o empleo inadecuado', 'Empleo infantil y adolescente'],
+    acciones: [
+      { num:1, titulo:'Promover talleres en habilidades blandas para ciudadanos en búsqueda de empleo',
+        desc:'Talleres virtuales gratuitos en la plataforma e-learning sobre generación de negocio, legislación laboral, marketing digital y orientación laboral.',
+        tipo:'Actividad relevante', fecha_ini:'Ene 2026', fecha_fin:'Dic 2026', frecuencia:'Trimestral',
+        resultados:'Sin resultados reportados al período.', pct:0, estado:'En ejecución',
+        justificacion:'Riesgo: conexión masiva simultánea podría generar indisponibilidad de la plataforma e-learning.',
+        enlace:''},
+      { num:2, titulo:'Capacitar a ciudadanos a través de los cursos del Servicio Público de Empleo',
+        desc:'Cursos de capacitación gratuitos en coordinación con empresas privadas e instituciones públicas para mejorar el perfil profesional.',
+        tipo:'Actividad relevante', fecha_ini:'Ene 2026', fecha_fin:'Dic 2026', frecuencia:'Trimestral',
+        resultados:'Sin resultados reportados al período.', pct:0, estado:'En ejecución',
+        justificacion:'Riesgo: baja difusión de los cursos puede reducir la participación ciudadana.',
+        enlace:''},
+      { num:3, titulo:'Colocar laboralmente a ciudadanos a través del Servicio Público de Empleo',
+        desc:'Facilitación de inserción laboral mediante difusión y gestión de ofertas de empleo conectando demandantes con oportunidades acordes a su perfil.',
+        tipo:'Actividad relevante', fecha_ini:'Ene 2026', fecha_fin:'Dic 2026', frecuencia:'Trimestral',
+        resultados:'Sin resultados reportados al período.', pct:0, estado:'En ejecución',
+        justificacion:'Riesgo: plataforma tecnológica sin actualizaciones puede generar indisponibilidad del sistema Encuentra Empleo.',
+        enlace:''},
+      { num:4, titulo:'Sensibilizar sobre la prevención del trabajo infantil',
+        desc:'Talleres a empleadores, instituciones públicas, trabajadores y sociedad civil sobre derechos laborales y prevención del trabajo infantil.',
+        tipo:'Actividad relevante', fecha_ini:'Ene 2026', fecha_fin:'Dic 2026', frecuencia:'Trimestral',
+        resultados:'Sin resultados reportados al período.', pct:0, estado:'En ejecución',
+        justificacion:'Riesgo: baja participación de actores clave puede debilitar la efectividad de la sensibilización.',
+        enlace:''},
+      { num:5, titulo:'Ejecutar inspecciones para identificar niñas, niños y adolescentes en trabajo infantil',
+        desc:'Inspecciones a empleadores del sector privado para verificar cumplimiento de obligaciones laborales en materia de trabajo infantil y adolescente peligroso.',
+        tipo:'Actividad relevante', fecha_ini:'Ene 2026', fecha_fin:'Dic 2026', frecuencia:'Mensual',
+        resultados:'Sin resultados reportados al período.', pct:0, estado:'En ejecución',
+        justificacion:'Riesgo: número limitado de inspectores en territorio reduce la cobertura de visitas técnicas.',
+        enlace:''},
+      { num:6, titulo:'Ejecutar inspecciones para verificar el cumplimiento de obligaciones laborales',
+        desc:'Inspecciones integrales y focalizadas en relaciones laborales del Código de Trabajo, garantizando derechos y obligaciones legales.',
+        tipo:'Actividad relevante', fecha_ini:'Ene 2026', fecha_fin:'Dic 2026', frecuencia:'Mensual',
+        resultados:'Sin resultados reportados al período.', pct:0, estado:'En ejecución',
+        justificacion:'Riesgo: número limitado de inspectores afecta la capacidad operativa de verificación de cumplimiento laboral.',
+        enlace:''},
+    ],
+  },
+};
+
+function estadoBadge(estado) {
+  const map = {
+    'Cumplido':    'cumplido',
+    'En ejecución':'ejecucion',
+    'No iniciado': 'noiniciado',
+    'Suspendida':  'suspendida',
+    'Finalizada':  'finalizada',
+  };
+  const cls = map[estado] || 'noiniciado';
+  const icons = { cumplido:'✅', ejecucion:'🟡', noiniciado:'🔴', suspendida:'🔴', finalizada:'✅' };
+  return `<span class="estado-badge estado-${cls}">${icons[cls]} ${estado}</span>`;
+}
+
+function pctBar(pct, estado) {
+  const color = estado === 'Cumplido' || estado === 'Finalizada' ? '#1B7A4A'
+              : estado === 'En ejecución' ? '#F4B400'
+              : '#D63B2F';
+  return `<div class="pct-bar-wrap">
+    <div class="pct-bar-track">
+      <div class="pct-bar-fill" style="width:${Math.min(pct,100)}%;background:${color};"></div>
+    </div>
+    <span class="pct-val">${pct.toFixed(1)}%</span>
+  </div>`;
+}
+
+function renderCronKPIs(inst) {
+  const d = CRON_DATA[inst];
+  if (!d) return;
+  const acc = d.acciones;
+  const cumplidas = acc.filter(a => a.estado === 'Cumplido' || a.estado === 'Finalizada').length;
+  const enEj = acc.filter(a => a.estado === 'En ejecución').length;
+  const noIni = acc.filter(a => a.estado === 'No iniciado' || a.estado === 'Suspendida').length;
+
+  const kpis = [
+    { num: acc.length,    label: 'Acciones totales',          color: '#0B1F5B' },
+    { num: cumplidas,     label: 'Cumplidas',                 color: '#1B7A4A' },
+    { num: enEj,          label: 'En ejecución',              color: '#7F6000' },
+    { num: noIni,         label: 'Vencidas / No iniciadas',   color: '#D63B2F' },
+  ];
+
+  const cont = document.getElementById('cron-kpis');
+  cont.innerHTML = kpis.map(k => `
+    <div class="summary-kpi" style="border-left-color:${k.color}">
+      <div class="sk-num" style="color:${k.color}">${k.num}</div>
+      <div class="sk-label">${k.label}</div>
+    </div>`).join('');
+}
+
+function renderCronTabla(inst) {
+  const d = CRON_DATA[inst];
+  if (!d) {
+    document.getElementById('cron-tbody').innerHTML = `
+      <tr><td colspan="9" style="text-align:center;padding:40px;color:var(--subtexto);">
+        <div style="font-size:28px;margin-bottom:8px;">🏗️</div>
+        <div style="font-size:14px;font-weight:600;">Información próximamente disponible</div>
+        <div style="font-size:12px;margin-top:4px;">Completa la plantilla Excel y entrégala al equipo técnico.</div>
+      </td></tr>`;
+    document.getElementById('cron-kpis').innerHTML = '';
+    return;
+  }
+
+  document.getElementById('cron-titulo').textContent =
+    `${d.nombre} — Cronograma de Acciones 2026`;
+  document.getElementById('cron-sub').textContent =
+    `Mes de reporte: ${d.mes} · Acciones orientadas a reducir la TPM`;
+
+  renderCronKPIs(inst);
+
+  // Update filter counts
+  const acc = d.acciones;
+  const counts = {
+    todas:    acc.length,
+    ejecucion: acc.filter(a => a.estado === 'En ejecución').length,
+    cumplido:  acc.filter(a => a.estado === 'Cumplido' || a.estado === 'Finalizada').length,
+    vencido:   acc.filter(a => a.estado === 'No iniciado' || a.estado === 'Suspendida').length,
+  };
+  Object.entries(counts).forEach(([k,v]) => {
+    const el = document.getElementById('fc-' + k);
+    if (el) el.textContent = v;
+  });
+  // Reset filter to "todas"
+  document.querySelectorAll('.cron-filter').forEach(b => b.classList.remove('active'));
+  const allBtn = document.querySelector('.cron-filter[data-filter="todas"]');
+  if (allBtn) allBtn.classList.add('active');
+  window._cronFiltroActual = 'todas';
+
+  const tbody = document.getElementById('cron-tbody');
+  tbody.innerHTML = d.acciones.map(a => `
+    <tr>
+      <td class="center"><div class="accion-num">${a.num}</div></td>
+      <td>
+        <div class="accion-title">${a.titulo}</div>
+        <div class="accion-desc">${a.desc}</div>
+      </td>
+      <td class="center"><span class="badge badge-blue" style="font-size:10px;">${a.tipo}</span></td>
+      <td class="center" style="font-size:11px;color:var(--subtexto);">
+        ${a.fecha_ini}<br>→ ${a.fecha_fin}
+      </td>
+      <td class="center"><span class="badge badge-blue" style="font-size:10px;">${a.frecuencia}</span></td>
+      <td style="font-size:11px;">${a.resultados}</td>
+      <td style="display:none;">${pctBar(a.pct, a.estado)}</td>
+      <td class="center">${estadoBadge(a.estado)}</td>
+      <td style="font-size:11px;">${a.justificacion}
+        ${a.enlace ? `<br><a href="${a.enlace}" target="_blank" class="link-btn">🔗 Verificable</a>` : ''}
+      </td>
+    </tr>`).join('');
+}
+
+function verInstitucion(inst, btn) {
+  document.querySelectorAll('.inst-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderCronTabla(inst);
+}
+
+function filtrarCronograma(filtro, btn) {
+  document.querySelectorAll('.cron-filter').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  window._cronFiltroActual = filtro;
+
+  const inst = document.querySelector('.inst-btn.active')?.dataset?.inst ||
+               [...document.querySelectorAll('.inst-btn')].find(b => b.classList.contains('active'))?.getAttribute('onclick')?.match(/'(\w+)'/)?.[1] || 'MDH';
+  const d = CRON_DATA[inst];
+  if (!d) return;
+
+  const filtroMap = {
+    todas:    () => true,
+    ejecucion:a => a.estado === 'En ejecución',
+    cumplido: a => a.estado === 'Cumplido' || a.estado === 'Finalizada',
+    vencido:  a => a.estado === 'No iniciado' || a.estado === 'Suspendida',
+  };
+  const fn = filtroMap[filtro] || (() => true);
+  const accFiltradas = d.acciones.filter(fn);
+
+  const tbody = document.getElementById('cron-tbody');
+  if (accFiltradas.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="9" style="text-align:center;padding:32px;color:var(--subtexto);">
+      <div style="font-size:24px;margin-bottom:6px;">✅</div>
+      <div style="font-size:13px;font-weight:600;">No hay acciones en este estado</div></td></tr>`;
+    return;
+  }
+  tbody.innerHTML = accFiltradas.map(a => `
+    <tr>
+      <td class="center"><div class="accion-num">${a.num}</div></td>
+      <td><div class="accion-title">${a.titulo}</div><div class="accion-desc">${a.desc}</div></td>
+      <td class="center"><span class="badge badge-blue" style="font-size:10px;">${a.tipo}</span></td>
+      <td class="center" style="font-size:11px;color:var(--subtexto);">${a.fecha_ini}<br>→ ${a.fecha_fin}</td>
+      <td class="center"><span class="badge badge-blue" style="font-size:10px;">${a.frecuencia}</span></td>
+      <td style="font-size:11px;">${a.resultados}</td>
+      <td style="display:none;">${pctBar(a.pct, a.estado)}</td>
+      <td class="center">${estadoBadge(a.estado)}</td>
+      <td style="font-size:11px;">${a.justificacion}
+        ${a.enlace ? `<br><a href="${a.enlace}" target="_blank" class="link-btn">🔗 Verificable</a>` : ''}
+      </td>
+    </tr>`).join('');
+}
+
+
+
+// ══════════════════════════════════════
+// INIT
+// ══════════════════════════════════════
+// INIT
+// ══════════════════════════════════════
+document.addEventListener('DOMContentLoaded', () => {
+  buildTablaIndicadores();
+  buildContribBars();
+  buildUrbanRuralBars();
+  buildChartContrafactual();
+  buildDecisCards();
+  buildChartPrevalencia();
+  renderProvincial('saneamiento');
+  renderProvList('saneamiento');
+  buildChartSerie();
+  renderCronTabla('MDH');
+});
+
+
+
+</script>
+</body>
+</html>
