@@ -663,9 +663,14 @@
         <div class="inst-sigla">MINEDEC</div>
         <div class="inst-name">Min. Educación,<br>Deporte y Cultura</div>
       </button>
-      <button class="inst-btn" onclick="verInstitucion('MIT', this)">
-        <div class="inst-sigla">MIT</div>
-        <div class="inst-name">Min. Infraestructura<br>y Trabajo</div>
+      <button class="inst-btn" onclick="verInstitucion('MDT', this)">
+        <div class="inst-sigla">MDT</div>
+        <div class="inst-name">Ministerio<br>del Trabajo</div>
+      </button>
+      <button class="inst-btn inst-btn-disabled" title="Información próximamente disponible" disabled>
+        <div class="inst-sigla" style="color:var(--subtexto);">MIT</div>
+        <div class="inst-name">Min. Infraestructura<br>y Transporte</div>
+        <div class="inst-coming">🔒 Próximamente</div>
       </button>
       <button class="inst-btn inst-btn-disabled" title="Información próximamente disponible" disabled>
         <div class="inst-sigla" style="color:var(--subtexto);">VMDUH</div>
@@ -673,10 +678,17 @@
         <div class="inst-coming">🔒 Próximamente</div>
       </button>
       <button class="inst-btn inst-btn-disabled" title="Información próximamente disponible" disabled>
+        <div class="inst-sigla" style="color:var(--subtexto);">AME</div>
+        <div class="inst-name">Acciones AME</div>
+        <div class="inst-coming" style="font-size:9px;color:var(--subtexto);font-style:normal;">Asoc. Municipalidades<br>Ecuatorianas</div>
+        <div class="inst-coming">🔒 Próximamente</div>
+      </button>
+      <button class="inst-btn inst-btn-disabled" title="Información próximamente disponible" disabled>
         <div class="inst-sigla" style="color:var(--subtexto);">MAATE</div>
         <div class="inst-name">Min. Ambiente,<br>Agua y Transición</div>
         <div class="inst-coming">🔒 Próximamente</div>
-      </button>    </div>
+      </button>
+    </div>
   </div>
 
   <!-- Summary KPIs -->
@@ -1316,7 +1328,7 @@ function renderProvList(ind) {
   if (!cont) return;
 
   document.getElementById('titulo-prov-lista').textContent =
-    'Ranking · ' + TERR.titulos[ind].split(' ').slice(0,3).join(' ') + '...';
+    'Ranking · ' + TERR.titulos[ind];
 
   cont.innerHTML = datos.map((d, i) => {
     const barW = Math.max((d.v / maxV * 100), 2).toFixed(0);
@@ -1429,96 +1441,81 @@ const CRON_DATA = {
   },
   MINEDEC: {
     nombre: 'Ministerio de Educación, Deporte y Cultura',
-    sigla:  'MINEDEC',
-    mes:    'Planificación 2026',
+    sigla:  'MINEDEC', mes: 'Planificación 2026',
     indicadores: ['No acceso a educación superior (económica)', 'Logro educativo incompleto'],
     acciones: [
       { num:1, titulo:'Otorgar becas para estudios de cuarto nivel, enfocadas al sector hidrocarburos',
-        desc:'Becas de estudio para especialización de la industria de hidrocarburos, contribuyendo al desarrollo y talento humano del país.',
+        desc:'Becas de estudio para especialización de la industria de hidrocarburos, contribuyendo al desarrollo del talento humano del país.',
         tipo:'Programa', fecha_ini:'Abr 2026', fecha_fin:'Jun 2026', frecuencia:'Trimestral',
         resultados:'Sin resultados reportados al período.', pct:0, estado:'En ejecución',
-        justificacion:'Riesgo: si los adjudicatarios no suscriben contratos de financiamiento, el monto total planificado podría no ejecutarse.',
-        enlace:''},
+        justificacion:'Riesgo: si los adjudicatarios no suscriben contratos de financiamiento, el monto planificado podría no ejecutarse en su integridad.', enlace:''},
       { num:2, titulo:'Implementar programa de becas para reducción de la brecha digital',
         desc:'Becas enfocadas al cierre de la brecha digital en zonas urbano-marginales, rurales y fronterizas.',
         tipo:'Programa', fecha_ini:'Jul 2026', fecha_fin:'Sep 2026', frecuencia:'Trimestral',
         resultados:'Sin resultados reportados al período.', pct:0, estado:'No iniciado',
-        justificacion:'Período de ejecución aún no iniciado. Riesgo de sub-ejecución si los adjudicatarios no suscriben contratos.',
-        enlace:''},
+        justificacion:'Período de ejecución aún no iniciado. Riesgo de sub-ejecución si los adjudicatarios no suscriben contratos.', enlace:''},
       { num:3, titulo:'Otorgar becas y ayudas económicas para estudios de educación superior y capacitación continua',
         desc:'Proyecto Desarrollando el Talento Humano: acceso a tercer y cuarto nivel, formación continua y empleabilidad.',
         tipo:'Proyecto', fecha_ini:'Oct 2026', fecha_fin:'Dic 2026', frecuencia:'Trimestral',
         resultados:'Sin resultados reportados al período.', pct:0, estado:'No iniciado',
-        justificacion:'Período aún no iniciado. Requiere dictamen de prioridad para acceder a los recursos asignados.',
-        enlace:''},
+        justificacion:'Período aún no iniciado. Requiere dictamen de prioridad para acceder a los recursos asignados.', enlace:''},
       { num:4, titulo:'Fortalecer el acceso a educación superior técnica mediante el curso de nivelación IMPÚLSAT',
         desc:'Curso de nivelación para aspirantes de 18-29 años a institutos técnicos y tecnológicos públicos.',
         tipo:'Programa', fecha_ini:'Ene 2026', fecha_fin:'Dic 2026', frecuencia:'Trimestral',
         resultados:'Sin resultados reportados al período.', pct:0, estado:'En ejecución',
-        justificacion:'Riesgo: baja difusión podría reducir participación. El curso no es obligatorio.',
-        enlace:''},
+        justificacion:'Riesgo: baja difusión podría reducir participación. El curso no es obligatorio.', enlace:''},
       { num:5, titulo:'Aplicar políticas de acción afirmativa para postulantes en situación de vulnerabilidad socioeconómica',
         desc:'Mecanismos de priorización por condición socioeconómica y grupos de atención prioritaria en el acceso a educación superior pública.',
         tipo:'Política Pública', fecha_ini:'Ene 2026', fecha_fin:'Nov 2026', frecuencia:'Trimestral',
         resultados:'Sin resultados reportados al período.', pct:0, estado:'En ejecución',
-        justificacion:'Riesgo: inconsistencias en información de carteras de Estado pueden afectar la identificación de beneficiarios.',
-        enlace:''},
+        justificacion:'Riesgo: inconsistencias en información de carteras de Estado pueden afectar la identificación de beneficiarios.', enlace:''},
       { num:6, titulo:'Gestionar con las IES el registro de oferta de cupos por período académico',
         desc:'Coordinación con instituciones de educación superior públicas para carga de cupos conforme al cronograma nacional.',
         tipo:'Actividad relevante', fecha_ini:'Ene 2026', fecha_fin:'Dic 2026', frecuencia:'Trimestral',
         resultados:'Sin resultados reportados al período.', pct:0, estado:'En ejecución',
-        justificacion:'Riesgo: disminución del presupuesto a educación superior podría reducir el número de cupos ofertados.',
-        enlace:''},
+        justificacion:'Riesgo: disminución del presupuesto a educación superior podría reducir el número de cupos ofertados.', enlace:''},
       { num:7, titulo:'Gestionar los procesos de acceso a la educación superior de personas privadas de la libertad',
         desc:'Coordinación con el SNAI para que las PPL puedan acceder al proceso de admisión a la educación superior.',
         tipo:'Actividad relevante', fecha_ini:'Ene 2026', fecha_fin:'Dic 2026', frecuencia:'Trimestral',
         resultados:'Sin resultados reportados al período.', pct:0, estado:'En ejecución',
-        justificacion:'Riesgo: crisis penitenciarias de seguridad podrían disminuir el número de PPL participantes.',
-        enlace:''},
+        justificacion:'Riesgo: crisis penitenciarias de seguridad podrían disminuir el número de PPL participantes.', enlace:''},
     ],
   },
-  MIT: {
-    nombre: 'Ministerio de Infraestructura y Trabajo',
-    sigla:  'MIT',
-    mes:    'Planificación 2026',
+  MDT: {
+    nombre: 'Ministerio del Trabajo',
+    sigla:  'MDT', mes: 'Planificación 2026',
     indicadores: ['Desempleo o empleo inadecuado', 'Empleo infantil y adolescente'],
     acciones: [
       { num:1, titulo:'Promover talleres en habilidades blandas para ciudadanos en búsqueda de empleo',
         desc:'Talleres virtuales gratuitos en la plataforma e-learning sobre generación de negocio, legislación laboral, marketing digital y orientación laboral.',
         tipo:'Actividad relevante', fecha_ini:'Ene 2026', fecha_fin:'Dic 2026', frecuencia:'Trimestral',
         resultados:'Sin resultados reportados al período.', pct:0, estado:'En ejecución',
-        justificacion:'Riesgo: conexión masiva simultánea podría generar indisponibilidad de la plataforma e-learning.',
-        enlace:''},
+        justificacion:'Riesgo: conexión masiva simultánea podría generar indisponibilidad de la plataforma e-learning.', enlace:''},
       { num:2, titulo:'Capacitar a ciudadanos a través de los cursos del Servicio Público de Empleo',
-        desc:'Cursos de capacitación gratuitos en coordinación con empresas privadas e instituciones públicas para mejorar el perfil profesional.',
+        desc:'Cursos de capacitación gratuitos coordinados con empresas privadas e instituciones públicas para mejorar el perfil profesional.',
         tipo:'Actividad relevante', fecha_ini:'Ene 2026', fecha_fin:'Dic 2026', frecuencia:'Trimestral',
         resultados:'Sin resultados reportados al período.', pct:0, estado:'En ejecución',
-        justificacion:'Riesgo: baja difusión de los cursos puede reducir la participación ciudadana.',
-        enlace:''},
+        justificacion:'Riesgo: baja difusión de los cursos puede reducir la participación ciudadana.', enlace:''},
       { num:3, titulo:'Colocar laboralmente a ciudadanos a través del Servicio Público de Empleo',
         desc:'Facilitación de inserción laboral mediante difusión y gestión de ofertas de empleo conectando demandantes con oportunidades acordes a su perfil.',
         tipo:'Actividad relevante', fecha_ini:'Ene 2026', fecha_fin:'Dic 2026', frecuencia:'Trimestral',
         resultados:'Sin resultados reportados al período.', pct:0, estado:'En ejecución',
-        justificacion:'Riesgo: plataforma tecnológica sin actualizaciones puede generar indisponibilidad del sistema Encuentra Empleo.',
-        enlace:''},
+        justificacion:'Riesgo: plataforma tecnológica sin actualizaciones puede generar indisponibilidad del sistema Encuentra Empleo.', enlace:''},
       { num:4, titulo:'Sensibilizar sobre la prevención del trabajo infantil',
         desc:'Talleres a empleadores, instituciones públicas, trabajadores y sociedad civil sobre derechos laborales y prevención del trabajo infantil.',
         tipo:'Actividad relevante', fecha_ini:'Ene 2026', fecha_fin:'Dic 2026', frecuencia:'Trimestral',
         resultados:'Sin resultados reportados al período.', pct:0, estado:'En ejecución',
-        justificacion:'Riesgo: baja participación de actores clave puede debilitar la efectividad de la sensibilización.',
-        enlace:''},
+        justificacion:'Riesgo: baja participación de actores clave puede debilitar la efectividad de la sensibilización.', enlace:''},
       { num:5, titulo:'Ejecutar inspecciones para identificar niñas, niños y adolescentes en trabajo infantil',
         desc:'Inspecciones a empleadores del sector privado para verificar cumplimiento de obligaciones laborales en materia de trabajo infantil y adolescente peligroso.',
         tipo:'Actividad relevante', fecha_ini:'Ene 2026', fecha_fin:'Dic 2026', frecuencia:'Mensual',
         resultados:'Sin resultados reportados al período.', pct:0, estado:'En ejecución',
-        justificacion:'Riesgo: número limitado de inspectores en territorio reduce la cobertura de visitas técnicas.',
-        enlace:''},
+        justificacion:'Riesgo: número limitado de inspectores en territorio reduce la cobertura de visitas técnicas.', enlace:''},
       { num:6, titulo:'Ejecutar inspecciones para verificar el cumplimiento de obligaciones laborales',
         desc:'Inspecciones integrales y focalizadas en relaciones laborales del Código de Trabajo, garantizando derechos y obligaciones legales.',
         tipo:'Actividad relevante', fecha_ini:'Ene 2026', fecha_fin:'Dic 2026', frecuencia:'Mensual',
         resultados:'Sin resultados reportados al período.', pct:0, estado:'En ejecución',
-        justificacion:'Riesgo: número limitado de inspectores afecta la capacidad operativa de verificación de cumplimiento laboral.',
-        enlace:''},
+        justificacion:'Riesgo: número limitado de inspectores afecta la capacidad operativa de verificación de cumplimiento laboral.', enlace:''},
     ],
   },
 };
@@ -1555,6 +1552,7 @@ function renderCronKPIs(inst) {
   const cumplidas = acc.filter(a => a.estado === 'Cumplido' || a.estado === 'Finalizada').length;
   const enEj = acc.filter(a => a.estado === 'En ejecución').length;
   const noIni = acc.filter(a => a.estado === 'No iniciado' || a.estado === 'Suspendida').length;
+
 
   const kpis = [
     { num: acc.length,    label: 'Acciones totales',          color: '#0B1F5B' },
